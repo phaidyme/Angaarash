@@ -1,7 +1,6 @@
-#ifndef TOKEN
-#define TOKEN
+#pragma once
 
-#include <unordered_map>
+#include "cpp_utils/src/String.h"
 
 class Token {
 public:
@@ -28,7 +27,14 @@ public:
 
 class Operator: public Token {
 public:
-	enum Type {addition='+', subtraction='-', multiplication='*', division='/', exponentiation='^'};
+	enum Type {
+		addition='+',
+		subtraction='-',
+		multiplication='*',
+		division='/',
+		exponentiation='^'
+	};
+	
 	static const Type types[5];
 	Type type;
 
@@ -59,5 +65,3 @@ class LeftParenthesis: public Token {
 class RightParenthesis: public Token {
 	bool is_type(String type_name) const override { return type_name == "RightParenthesis"; }
 };
-
-#endif

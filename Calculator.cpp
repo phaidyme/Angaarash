@@ -1,4 +1,23 @@
-#include "evaluator.h"
+#include "Calculator.hpp"
+
+void Calculator::process_command(String command) {
+	String command_type = command.slice(0, command.find(' '));
+	String command_content = command.slice(command.find(' '), command.get_len());
+	
+	command_content = command_content.split(' ').join();
+	assert(command_content.find(' ') == ERR_VAL);
+	
+	if (command_type == "let") {
+		let(command_content);
+	}
+}
+
+void Calculator::let(String & input) {
+	auto post_fix = shunting_yard(input);
+	std::cout << evaluate_postfix_expression(post_fix) << std::endl;
+}
+
+/***************** non-member, non-friend functions ******************/
 
 double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>> expression) {
 	std::shared_ptr<Token> token;
@@ -9,15 +28,15 @@ double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>> expression
 		expression.pop();
 
 		if (token->is_type("Number")) {
-			Number n = *static_pointer_cast<Number>(token);
+			Number n = *std::static_pointer_cast<Number>(token);
 			stack.push(n);
 		}
 		else if (token->is_type("Function")) {
-			Function f = *static_pointer_cast<Function>(token);
+			Function f = *std::static_pointer_cast<Function>(token);
 			stack.top() = Function::evaluate(f, stack.top());
 		}
 		else if (token->is_type("Operator")) {
-			Operator o = *static_pointer_cast<Operator>(token);
+			Operator o = *std::static_pointer_cast<Operator>(token);
 			double rhs = stack.top();
 			stack.pop();
 			double lhs = stack.top();
@@ -47,11 +66,11 @@ std::queue<std::shared_ptr<Token>> shunting_yard(String input) {
 			operator_stack.push(token);
 		}
 		else if (token->is_type("Operator")) {
-			Operator o1 = *static_pointer_cast<Operator>(token);
+			Operator o1 = *std::static_pointer_cast<Operator>(token);
 			while (true) {
 				if (operator_stack.empty()) break;
 				if (operator_stack.top()->is_type("LeftParenthesis")) break; // note: tokens in operator_stack are always either Function, Operator or LeftBracket objects
-				Operator o2 = *static_pointer_cast<Operator>(operator_stack.top());
+				Operator o2 = *std::static_pointer_cast<Operator>(operator_stack.top());
 
 				if (o2 > o1 || (o1 == o2 && o1.is_left_associative())) {
 					output_queue.push(operator_stack.top());

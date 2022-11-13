@@ -1,9 +1,8 @@
-#include <cmath>
+#include <cassert>
 
 #include <stdexcept>
 
-#include "cpp_utils/src/String.h"
-#include "token.h"
+#include "Token.hpp"
 
 double Function::evaluate(Function const& f, double number) {
 	assert(!"todo: implement");
@@ -25,7 +24,7 @@ bool Operator::is_operator(char c) {
 	return false;
 }
 
-double Operator::evaluate(Operator const& o,double a, double b) {
+double Operator::evaluate(Operator const& o, double a, double b) {
 	if (o.type == addition) return a + b;
 	else if (o.type == subtraction) return a - b;
 	else if (o.type == multiplication) return a * b;
