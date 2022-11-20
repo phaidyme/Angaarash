@@ -11,6 +11,7 @@ class Calculator {
 public:
 	void process_command(String);
 private:
+	std::unordered_map<String,Variable> variables;
 	void let(String &);
 };
 
