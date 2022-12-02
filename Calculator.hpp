@@ -9,9 +9,10 @@
 
 class Calculator {
 public:
+	Calculator() {};
 	void process_command(String);
 private:
-	std::unordered_map<String,Variable> variables;
+	std::unordered_map<String,double> variables;
 	void let(String &);
 };
 
