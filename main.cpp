@@ -21,7 +21,7 @@ void obey(String);
 
 
 int main() {
-	    // Setup window
+    // Setup window
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit())
         return 1;
@@ -88,7 +88,7 @@ int main() {
     //IM_ASSERT(font != NULL);
 
     // Our state
-    bool show_demo_window = trume;
+    bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
