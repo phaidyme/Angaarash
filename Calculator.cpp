@@ -1,25 +1,29 @@
+#include <cassert>
+#include <iostream>
+
 #include "Calculator.hpp"
 
-void Calculator::process_command(String command) {
-	String command_type = command.slice(0, command.find(' '));
-	String command_content = command.slice(command.find(' '), command.get_len());
+// todo: move these to Console or Parser or something idk
+void process_command(std::string command) {
+	int n = command.find(' ');
+	std::string	command_type = command.substr(0, n);
+	std::string	command_content = command.substr(n, n+command.size());
 	
-	command_content = command_content.split(' ').join();
+	/* split is in helper_functions
+	command_content = command_content.split(' ').join(); 
 	assert(command_content.find(' ') == ERR_VAL);
+	*/
 	
 	if (command_type == "let") {
-		let(command_content);
+		Calculator calculator;
+		auto post_fix = calculator.shunting_yard(command_content);
+		std::cout << calculator.evaluate_postfix_expression(post_fix) << std::endl;
 	}
-}
-
-void Calculator::let(String & input) {
-	auto post_fix = shunting_yard(input);
-	std::cout << evaluate_postfix_expression(post_fix) << std::endl;
 }
 
 /***************** non-member, non-friend functions ******************/
 
-double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>> expression) {
+double Calculator::evaluate_postfix_expression(std::queue<std::shared_ptr<Token>> expression) {
 	std::shared_ptr<Token> token;
 	std::stack<double> stack;
 
@@ -51,12 +55,12 @@ double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>> expression
 	return stack.top();
 }
 		
-std::queue<std::shared_ptr<Token>> shunting_yard(String input) {
+std::queue<std::shared_ptr<Token>> Calculator::shunting_yard(std::string	 input) {
 	std::shared_ptr<Token> token;
 	std::stack<std::shared_ptr<Token>> operator_stack;
 	std::queue<std::shared_ptr<Token>> output_queue;
 
-	while(!input.is_empty()) {
+	while(!input.empty()) {
 		token = read_token(input);
 
 		if (token->is_type("Number")) {
@@ -113,8 +117,8 @@ std::queue<std::shared_ptr<Token>> shunting_yard(String input) {
 	return output_queue;
 }
 
-std::shared_ptr<Token> read_token(String & input) {
-	assert(!input.is_empty());
+std::shared_ptr<Token> Calculator::read_token(std::string & input) {
+	assert(!input.empty());
 	
 	std::shared_ptr<Token> retval;
 
@@ -123,7 +127,7 @@ std::shared_ptr<Token> read_token(String & input) {
 	}
 	else if (Operator::is_operator(input[0])) {
 		retval = std::make_shared<Operator>(input[0]);
-		input = input.slice(1, input.get_len());
+		input.erase(0);
 	}
 	else if (input[0] == '(') {
 		retval = std::make_shared<LeftParenthesis>();
@@ -140,7 +144,7 @@ std::shared_ptr<Token> read_token(String & input) {
 	return retval;
 }
 
-double read_number(String & input) {
+double read_number(std::string	 & input) {
 	assert(isdigit(input[0]));
 
 	// count digits + possible decimal point

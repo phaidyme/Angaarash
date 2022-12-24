@@ -10,13 +10,9 @@
 class Calculator {
 public:
 	Calculator() {};
-	void process_command(String);
-private:
-	std::unordered_map<String,double> variables;
-	void let(String &);
+	void process_command(std::string);
+	double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>>);
+	std::queue<std::shared_ptr<Token>> shunting_yard(std::string);
+	std::shared_ptr<Token> read_token(std::string &);
+	double read_number(std::string &);
 };
-
-double evaluate_postfix_expression(std::queue<std::shared_ptr<Token>>);
-std::queue<std::shared_ptr<Token>> shunting_yard(String);
-std::shared_ptr<Token> read_token(String &);
-double read_number(String &);

@@ -6497,10 +6497,10 @@ static void ShowExampleMenuFile()
 // For the console example, we are using a more C++ like approach of declaring a class to hold both data and functions.
 struct ExampleAppConsole
 {
-    char                  InputBuf[256];
+    char                  input_buffer[256];
     ImVector<char*>       Items;
     ImVector<const char*> Commands;
-    ImVector<char*>       History;
+    ImVector<char*>       history;
     int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
     ImGuiTextFilter       Filter;
     bool                  AutoScroll;
@@ -6510,7 +6510,7 @@ struct ExampleAppConsole
     {
         IMGUI_DEMO_MARKER("Examples/Console");
         ClearLog();
-        memset(InputBuf, 0, sizeof(InputBuf));
+        memset(input_buffer, 0, sizeof(input_buffer));
         HistoryPos = -1;
 
         // "CLASSIFY" is here to provide the test case where "C"+[tab] completes to "CL" and display multiple matches.
@@ -6525,8 +6525,8 @@ struct ExampleAppConsole
     ~ExampleAppConsole()
     {
         ClearLog();
-        for (int i = 0; i < History.Size; i++)
-            free(History[i]);
+        for (int i = 0; i < history.Size; i++)
+            free(history[i]);
     }
 
     // Portable helpers
@@ -6677,9 +6677,9 @@ struct ExampleAppConsole
         // Command-line
         bool reclaim_focus = false;
         ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
-        if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this))
+        if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), input_text_flags, &TextEditCallbackStub, (void*)this))
         {
-            char* s = InputBuf;
+            char* s = input_buffer;
             Strtrim(s);
             if (s[0])
                 ExecCommand(s);
@@ -6702,14 +6702,14 @@ struct ExampleAppConsole
         // Insert into history. First find match and delete it so it can be pushed to the back.
         // This isn't trying to be smart or optimal.
         HistoryPos = -1;
-        for (int i = History.Size - 1; i >= 0; i--)
-            if (Stricmp(History[i], command_line) == 0)
+        for (int i = history.Size - 1; i >= 0; i--)
+            if (Stricmp(history[i], command_line) == 0)
             {
-                free(History[i]);
-                History.erase(History.begin() + i);
+                free(history[i]);
+                history.erase(history.begin() + i);
                 break;
             }
-        History.push_back(Strdup(command_line));
+        history.push_back(Strdup(command_line));
 
         // Process command
         if (Stricmp(command_line, "CLEAR") == 0)
@@ -6724,9 +6724,9 @@ struct ExampleAppConsole
         }
         else if (Stricmp(command_line, "HISTORY") == 0)
         {
-            int first = History.Size - 10;
-            for (int i = first > 0 ? first : 0; i < History.Size; i++)
-                AddLog("%3d: %s\n", i, History[i]);
+            int first = history.Size - 10;
+            for (int i = first > 0 ? first : 0; i < history.Size; i++)
+                AddLog("%3d: %s\n", i, history[i]);
         }
         else
         {
@@ -6822,21 +6822,21 @@ struct ExampleAppConsole
                 if (data->EventKey == ImGuiKey_UpArrow)
                 {
                     if (HistoryPos == -1)
-                        HistoryPos = History.Size - 1;
+                        HistoryPos = history.Size - 1;
                     else if (HistoryPos > 0)
                         HistoryPos--;
                 }
                 else if (data->EventKey == ImGuiKey_DownArrow)
                 {
                     if (HistoryPos != -1)
-                        if (++HistoryPos >= History.Size)
+                        if (++HistoryPos >= history.Size)
                             HistoryPos = -1;
                 }
 
                 // A better implementation would preserve the data on the current input line along with cursor position.
                 if (prev_history_pos != HistoryPos)
                 {
-                    const char* history_str = (HistoryPos >= 0) ? History[HistoryPos] : "";
+                    const char* history_str = (HistoryPos >= 0) ? history[HistoryPos] : "";
                     data->DeleteChars(0, data->BufTextLen);
                     data->InsertChars(0, history_str);
                 }

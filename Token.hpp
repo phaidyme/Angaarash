@@ -1,11 +1,11 @@
 #pragma once
 
-#include "cpp_utils/src/String.h"
+#include <string>
 
 class Token {
 public:
-	virtual bool is_type(String) const = 0;
-	virtual operator String() const { return ""; };
+	virtual bool is_type(std::string) const = 0;
+	virtual operator std::string() const { return "token"; };
 };
 
 class Number: public Token {
@@ -15,13 +15,13 @@ public:
 	Number(double a_value): value(a_value) {}
 	operator double() { return value; }
 
-	bool is_type(String type_name) const override { return type_name == "Number"; }
-	operator String() const override { return std::to_string(value); }
+	bool is_type(std::string type_name) const override { return type_name == "Number"; }
+	operator std::string() const override { return std::to_string(value); }
 };
 
 class Function: public Token {
 public:
-	bool is_type(String type_name) const override { return type_name == "Function"; }
+	bool is_type(std::string type_name) const override { return type_name == "Function"; }
 	static double evaluate(Function const&, double);
 };
 
@@ -43,8 +43,8 @@ public:
 	Operator(Operator::Type a_type): type(a_type) {}
 
 	static bool is_operator(char);
-	bool is_type(String type_name) const override { return type_name == "Operator"; }
-	operator String() const override;
+	bool is_type(std::string type_name) const override { return type_name == "Operator"; }
+	operator std::string() const override;
 
 	bool is_left_associative() {
 		return this->type != exponentiation;
@@ -60,8 +60,8 @@ bool operator<=(Operator const&, Operator const&);
 bool operator>=(Operator const&, Operator const&);
 
 class LeftParenthesis: public Token {
-	bool is_type(String type_name) const override { return type_name == "LeftParenthesis"; }
+	bool is_type(std::string type_name) const override { return type_name == "LeftParenthesis"; }
 };
 class RightParenthesis: public Token {
-	bool is_type(String type_name) const override { return type_name == "RightParenthesis"; }
+	bool is_type(std::string type_name) const override { return type_name == "RightParenthesis"; }
 };
