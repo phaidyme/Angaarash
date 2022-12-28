@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include <math.h>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -12,9 +13,9 @@ double Function::evaluate(Function const& f, double number) {
 
 const Operator::Type Operator::types[5] = {addition,subtraction,multiplication,division,exponentiation};
 
-Operator::operator String() const {
-	String retval;
-	retval.push(type);
+Operator::operator std::string() const {
+	std::string retval;
+	retval.push_back(type);
 	return retval;
 }
 

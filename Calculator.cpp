@@ -55,7 +55,7 @@ double Calculator::evaluate_postfix_expression(std::queue<std::shared_ptr<Token>
 	return stack.top();
 }
 		
-std::queue<std::shared_ptr<Token>> Calculator::shunting_yard(std::string	 input) {
+std::queue<std::shared_ptr<Token>> Calculator::shunting_yard(std::string input) {
 	std::shared_ptr<Token> token;
 	std::stack<std::shared_ptr<Token>> operator_stack;
 	std::queue<std::shared_ptr<Token>> output_queue;
@@ -127,15 +127,15 @@ std::shared_ptr<Token> Calculator::read_token(std::string & input) {
 	}
 	else if (Operator::is_operator(input[0])) {
 		retval = std::make_shared<Operator>(input[0]);
-		input.erase(0);
+		input.erase(0, 1);
 	}
 	else if (input[0] == '(') {
 		retval = std::make_shared<LeftParenthesis>();
-		input = input.slice(1, input.get_len());
+		input.erase(0, 1);
 	}
 	else if (input[0] == ')') {
 		retval = std::make_shared<RightParenthesis>();
-		input = input.slice(1, input.get_len());
+		input.erase(0, 1);
 	}
 	else {
 		throw std::runtime_error("unrecognized token in command content");
@@ -144,13 +144,13 @@ std::shared_ptr<Token> Calculator::read_token(std::string & input) {
 	return retval;
 }
 
-double read_number(std::string	 & input) {
+double Calculator::read_number(std::string & input) {
 	assert(isdigit(input[0]));
 
 	// count digits + possible decimal point
 	int n = 0;
 	bool passed_decimal = false;
-	while (n < input.get_len()) {
+	while (n < input.length()) {
 		if (isdigit(input[n])) {
 			n++;
 		}
@@ -169,12 +169,9 @@ double read_number(std::string	 & input) {
 			}
 		}
 	}
-	// make input look like a c string before passing it to atof() to do the actual number reading
-	input.push('\0');
-	double number_val = atof(input.begin());
-	input.pop();
+	double number_val = atof(input.c_str());
 
-	input = input.slice(n, input.get_len());
+	input.erase(n, input.length() - n);
 
 	return number_val;
 }
