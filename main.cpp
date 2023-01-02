@@ -12,7 +12,6 @@
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
-#include "Calculator.hpp"
 #include "Console.hpp"
 
 static void glfw_error_callback(int, char const*);
@@ -26,8 +25,9 @@ int main() {
 		return 1;
 	}
 
-	// Decide GL+GLSL versions
+	static Console console;
 
+	// Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char *glsl_version = "#version 100";
@@ -78,7 +78,6 @@ int main() {
 
 	// Our state
 	bool show_console = true;
-	bool show_another_window = false;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 	// Main loop
@@ -91,7 +90,6 @@ int main() {
 		ImGui::NewFrame();
 
 		// do stuff
-		static Console console;
     	console.Draw("Example: Console", &show_console);
 
 		// Rendering

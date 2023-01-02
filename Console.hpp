@@ -2,9 +2,14 @@
 #include <cstring>
 
 #include <vector>
+#include <queue>
+#include <stack>
+#include <memory>
+#include <optional>
 
 #include "imgui/imgui.h"
 
+#include "Token.hpp"
 #include "helper_functions.hpp"
 
 class Console {
@@ -17,15 +22,13 @@ class Console {
 	bool AutoScroll, ScrollToBottom;
 
 public:
-	Console(): HistoryPos(1), AutoScroll(true), ScrollToBottom(false) {
+	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
 		memset(InputBuf, 0, sizeof(InputBuf));
 
 		commands.push_back("HELP");
 		commands.push_back("HISTORY");
 		commands.push_back("CLEAR");
 		commands.push_back("CLASSIFY");
-		
-		AddLog("Welcome to Dear ImGui!");
 	}
 
 	void AddLog(const char* fmt, ...) IM_FMTARGS(2) {
@@ -38,174 +41,8 @@ public:
 		items.push_back(std::string(buf));
 	}
 
-	void Draw(const char* title, bool* p_open) {
-		ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-		if (!ImGui::Begin(title, p_open)) {
-			ImGui::End();
-			return;
-		}
-
-		// As a specific feature guaranteed by the library, after calling Begin() the last Item represent the title bar.
-		// So e.g. IsItemHovered() will return true when hovering the title bar.
-		// Here we create a context menu only available from the title bar.
-		if (ImGui::BeginPopupContextItem()) {
-			if (ImGui::MenuItem("Close Console"))
-				*p_open = false;
-			ImGui::EndPopup();
-		}
-
-		ImGui::TextWrapped(
-			"This example implements a console with basic coloring, completion (TAB key) and history (Up/Down keys). A more elaborate "
-			"implementation may want to store entries along with extra data such as timestamp, emitter, etc.");
-		ImGui::TextWrapped("Enter 'HELP' for help.");
-
-		ImGui::Separator();
-
-		// Options menu
-		if (ImGui::BeginPopup("Options"))
-		{
-			ImGui::Checkbox("Auto-scroll", &AutoScroll);
-			ImGui::EndPopup();
-		}
-
-		// Options, Filter
-		if (ImGui::Button("Options"))
-			ImGui::OpenPopup("Options");
-		ImGui::SameLine();
-		Filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
-		ImGui::Separator();
-
-		// Reserve enough left-over height for 1 separator + 1 input text
-		const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-		if (ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar))
-		{
-			if (ImGui::BeginPopupContextWindow())
-			{
-				if (ImGui::Selectable("Clear")) {
-					items.clear();
-				}
-				ImGui::EndPopup();
-			}
-
-			// Display every line as a separate entry so we can change their color or add custom widgets.
-			// If you only want raw text you can use ImGui::TextUnformatted(log.begin(), log.end());
-			// NB- if you have thousands of entries this approach may be too inefficient and may require user-side clipping
-			// to only process visible items. The clipper will automatically measure the height of your first item and then
-			// "seek" to display only items in the visible area.
-			// To use the clipper we can replace your standard loop:
-			//	  for (int i = 0; i < Items.Size; i++)
-			//   With:
-			//	  ImGuiListClipper clipper;
-			//	  clipper.Begin(Items.Size);
-			//	  while (clipper.Step())
-			//		 for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
-			// - That your items are evenly spaced (same height)
-			// - That you have cheap random access to your elements (you can access them given their index,
-			//   without processing all the ones before)
-			// You cannot this code as-is if a filter is active because it breaks the 'cheap random-access' property.
-			// We would need random-access on the post-filtered list.
-			// A typical application wanting coarse clipping and filtering may want to pre-compute an array of indices
-			// or offsets of items that passed the filtering test, recomputing this array when user changes the filter,
-			// and appending newly elements as they are inserted. This is left as a task to the user until we can manage
-			// to improve this example code!
-			// If your items are of variable height:
-			// - Split them into same height items would be simpler and facilitate random-seeking into your list.
-			// - Consider using manual call to IsRectVisible() and skipping extraneous decoration from your items.
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-			
-			for (int i = 0; i < items.size(); i++) {
-				std::string const& item = items[i];
-				if (!Filter.PassFilter(item.c_str())) {
-					continue;
-				}
-				ImVec4 color;
-				bool has_color = false;
-				if (strstr(item.c_str(), "[error]")) {
-					color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
-					has_color = true;
-				}
-				else if (strncmp(item.c_str(), "# ", 2) == 0) {
-					color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
-					has_color = true;
-				}
-				if (has_color) {
-					ImGui::PushStyleColor(ImGuiCol_Text, color);
-				}
-				ImGui::TextUnformatted(item.c_str());
-				if (has_color) {
-					ImGui::PopStyleColor();
-				}
-			}
-
-			// Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
-			// Using a scrollbar or mouse-wheel will take away from the bottom edge.
-			if (ScrollToBottom || (AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
-				ImGui::SetScrollHereY(1.0f);
-			ScrollToBottom = false;
-
-			ImGui::PopStyleVar();
-		}
-		ImGui::EndChild();
-		ImGui::Separator();
-
-		// Command-line
-		bool reclaim_focus = false;
-		ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory;
-		if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this)) {
-			std::string s = InputBuf;
-			strtrim(s);
-			if (!s.empty()) {
-				ExecCommand(s);
-			}
-			s = "";
-			reclaim_focus = true;
-		}
-
-		// Auto-focus on window apparition
-		ImGui::SetItemDefaultFocus();
-		if (reclaim_focus)
-			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
-
-		ImGui::End();
-	}
-
-	void ExecCommand(std::string const& command_line) {
-		AddLog("# %s\n", command_line.c_str());
-
-		// Insert into history. First find match and delete it so it can be pushed to the back.
-		// This isn't trying to be smart or optimal.
-		HistoryPos = -1;
-		for (int i = history.size() - 1; i >= 0; i--) {
-			if (stricmp(history[i], command_line) == 0) {
-				history.erase(history.begin() + i);
-				break;
-			}
-		}
-		history.push_back(command_line);
-
-		// Process command
-		if (stricmp(command_line, "CLEAR") == 0) {
-			items.clear();
-		}
-		else if (stricmp(command_line, "HELP") == 0) {
-			AddLog("Commands:");
-			for(auto const& command: commands) {
-				AddLog("- %s", command.c_str());
-			}
-		}
-		else if (stricmp(command_line, "HISTORY") == 0) {
-			int i = std::max(0, (int)history.size() - 10);
-			for (; i < history.size(); i++) {
-				AddLog("%3d: %s\n", i, history[i].c_str());
-			}
-		}
-		else {
-			AddLog("Unknown command: '%s'\n", command_line.c_str());
-		}
-
-		// On command input, we scroll to bottom even if AutoScroll==false
-		ScrollToBottom = true;
-	}
+	void Draw(const char*, bool*);
+	void ExecCommand(std::string const&);
 
 	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data) {
 		Console* console = (Console*)data->UserData;
@@ -224,14 +61,15 @@ public:
 			const char* word_start = word_end;
 			while (word_start > data->Buf) {
 				const char c = word_start[-1];
-				if (c == ' ' || c == '\t' || c == ',' || c == ';')
+				if (c == ' ' || c == '\t' || c == ',' || c == ';') {
 					break;
+				}
 				word_start--;
 			}
 
 			// Build a list of candidates
 			std::vector<std::string> candidates;
-			for (int i = 0; i < commands.size(); i++)
+			for (uint i = 0; i < commands.size(); i++)
 				if (strnicmp(commands[i], word_start, (int)(word_end - word_start)) == 0)
 					candidates.push_back(commands[i]);
 
@@ -251,7 +89,7 @@ public:
 				while(true) {
 					int c = 0;
 					bool all_candidates_matches = true;
-					for (int i = 0; i < candidates.size() && all_candidates_matches; i++) {
+					for (uint i = 0; i < candidates.size() && all_candidates_matches; i++) {
 						if (i == 0) {
 							c = toupper(candidates[i][match_len]);
 						}
@@ -272,7 +110,7 @@ public:
 
 				// List matches
 				AddLog("Possible matches:\n");
-				for (int i = 0; i < candidates.size(); i++) {
+				for (uint i = 0; i < candidates.size(); i++) {
 					AddLog("- %s\n", candidates[i].c_str());
 				}
 			}
@@ -292,7 +130,7 @@ public:
 			}
 			else if (data->EventKey == ImGuiKey_DownArrow) {
 				if (HistoryPos != -1) {
-					if (++HistoryPos >= history.size()) {
+					if (++HistoryPos >= (int)history.size()) {
 						HistoryPos = -1;
 					}
 				}
@@ -309,3 +147,15 @@ public:
 		return 0;
 	}
 };
+
+// maths
+std::optional<std::queue<std::shared_ptr<Token>>>
+	shunting_yard(std::vector<std::shared_ptr<Token>>);
+std::optional<Number>
+	evaluate_postfix_expression(std::queue<std::shared_ptr<Token>>);
+
+// string parsing
+std::optional<std::vector<std::shared_ptr<Token>>>
+	parse_expression(std::string const&);
+std::optional<std::shared_ptr<Token>> read_token(std::string &);
+double read_number(std::string &);

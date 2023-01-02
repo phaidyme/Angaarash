@@ -3,7 +3,7 @@
 
 std::vector<std::string> split(std::string const&, char);
 
-int strnicmp(std::string const&, std::string const&, int);
+int strnicmp(std::string const&, std::string const&, uint);
 
 int stricmp(std::string const&, std::string const&);
 

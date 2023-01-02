@@ -1,6 +1,11 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <functional>
+#include <optional>
+#include <memory>
+#include <set>
 
 class Token {
 public:
@@ -17,12 +22,22 @@ public:
 
 	bool is_type(std::string type_name) const override { return type_name == "Number"; }
 	operator std::string() const override { return std::to_string(value); }
+
+	static std::optional<Number> parse(std::string&);
 };
 
 class Function: public Token {
+	static const std::unordered_map<
+		std::string,
+		std::function<Number(Number)>
+	> map;
+	std::function<Number(Number)> type;
 public:
+	Function(std::string);
 	bool is_type(std::string type_name) const override { return type_name == "Function"; }
-	static double evaluate(Function const&, double);
+	Number operator() (Number);
+
+	static std::optional<Function> parse(std::string&);
 };
 
 class Operator: public Token {

@@ -1,17 +1,73 @@
 #include <cassert>
+#include <cmath>
 
-#include <math.h>
 #include <stdexcept>
 #include <unordered_map>
 
 #include "Token.hpp"
 
-double Function::evaluate(Function const& f, double number) {
-	assert(!"todo: implement");
-	return 0;
+/*                                NUMBER                                      */
+std::optional<Number> Number::parse(std::string& input) {
+	if(!isdigit(input[0])) return std::nullopt;
+
+	// count digits + possible decimal point
+	uint n = 0;
+	bool passed_decimal = false;
+	while (n < input.length()) {
+		if (isdigit(input[n])) {
+			n++;
+		}
+		else {
+			if (passed_decimal) {
+				break;
+			}
+			else {
+				if (input[n] == '.') {
+					passed_decimal = true;
+					n++;
+				}
+				else {
+					break;
+				}
+			}
+		}
+	}
+	double number_val = atof(input.c_str());
+
+	input.erase(0, n);
+
+	return number_val;
 }
 
-const Operator::Type Operator::types[5] = {addition,subtraction,multiplication,division,exponentiation};
+/*                                 FUNCTION                                   */
+const std::unordered_map<
+	std::string,
+	std::function<Number(Number)>
+> Function::map = {
+	{"sin", sin}, {"cos", cos}, {"tan", tan},
+	{"arcsin", asin}, {"arccos", acos}, {"arctan", atan}
+};
+Function::Function(std::string s_type) {
+	assert(map.contains(s_type));
+	type = map.at(s_type);
+};
+Number Function::operator() (Number number) {
+	return type(number);
+}
+
+std::optional<Function> Function::parse(std::string& input) {
+	for(auto const& entry: map) {
+		if (input.find(entry.first) == 0) {
+			input.erase(0, entry.first.length());
+			return Function(entry.first);
+		}
+	}
+	return std::nullopt;
+}
+
+const Operator::Type Operator::types[5] = {
+	addition,subtraction,multiplication,division,exponentiation
+};
 
 Operator::operator std::string() const {
 	std::string retval;
