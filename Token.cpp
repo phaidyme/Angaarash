@@ -40,29 +40,23 @@ std::optional<Number> Number::parse(std::string& input) {
 }
 
 /*                                 FUNCTION                                   */
-const std::unordered_map<
-	std::string,
-	std::function<Number(Number)>
-> Function::map = {
-	{"sin", sin}, {"cos", cos}, {"tan", tan},
-	{"arcsin", asin}, {"arccos", acos}, {"arctan", atan}
-};
-Function::Function(std::string s_type) {
-	assert(map.contains(s_type));
-	type = map.at(s_type);
-};
-Number Function::operator() (Number number) {
-	return type(number);
+Function::Function(std::string n, double f(double)): name(n), func(f) {}
+
+bool Function::is_type(std::string type_name) const {
+	return type_name == "Function";
+}
+Function::operator std::string() const {
+	return name;
+}
+Number Function::operator() (Number n) {
+	return func(n);
+}
+bool Function::operator==(const Function& other) const {
+	return name == other.name;
 }
 
-std::optional<Function> Function::parse(std::string& input) {
-	for(auto const& entry: map) {
-		if (input.find(entry.first) == 0) {
-			input.erase(0, entry.first.length());
-			return Function(entry.first);
-		}
-	}
-	return std::nullopt;
+std::size_t std::hash<Function>::operator()(const Function & f) const {
+	return hash<string>()(std::string(f));
 }
 
 const Operator::Type Operator::types[5] = {

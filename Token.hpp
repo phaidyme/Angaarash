@@ -25,20 +25,25 @@ public:
 
 	static std::optional<Number> parse(std::string&);
 };
-
+/*                                 FUNCTION                                   */
 class Function: public Token {
-	static const std::unordered_map<
-		std::string,
-		std::function<Number(Number)>
-	> map;
-	std::function<Number(Number)> type;
+	std::string name;
+	std::function<Number(Number)> func;
 public:
-	Function(std::string);
-	bool is_type(std::string type_name) const override { return type_name == "Function"; }
+	Function(std::string,double(double));
+
+	bool is_type(std::string type_name) const override;
+	operator std::string() const override;
+
 	Number operator() (Number);
 
-	static std::optional<Function> parse(std::string&);
+	bool operator==(const Function&) const;
 };
+namespace std {
+	template <> struct hash<Function> {
+		size_t operator()(const Function & f) const;
+	};
+}
 
 class Operator: public Token {
 public:

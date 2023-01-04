@@ -10,6 +10,7 @@
 #include "imgui/imgui.h"
 
 #include "Token.hpp"
+#include "Calculator.hpp"
 #include "helper_functions.hpp"
 
 class Console {
@@ -21,6 +22,13 @@ class Console {
 	ImGuiTextFilter Filter;
 	bool AutoScroll, ScrollToBottom;
 
+	Calculator calculator;
+
+
+	std::optional<std::vector<std::shared_ptr<Token>>>
+		parse_expression(std::string const&);
+	std::optional<std::shared_ptr<Token>> read_token(std::string &);
+	std::optional<Function> read_function(std::string &);
 public:
 	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
 		memset(InputBuf, 0, sizeof(InputBuf));
@@ -147,15 +155,3 @@ public:
 		return 0;
 	}
 };
-
-// maths
-std::optional<std::queue<std::shared_ptr<Token>>>
-	shunting_yard(std::vector<std::shared_ptr<Token>>);
-std::optional<Number>
-	evaluate_postfix_expression(std::queue<std::shared_ptr<Token>>);
-
-// string parsing
-std::optional<std::vector<std::shared_ptr<Token>>>
-	parse_expression(std::string const&);
-std::optional<std::shared_ptr<Token>> read_token(std::string &);
-double read_number(std::string &);
