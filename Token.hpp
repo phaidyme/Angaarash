@@ -9,10 +9,11 @@
 
 class Token {
 public:
-	virtual bool is_type(std::string) const = 0;
+	virtual bool is_type(const std::string&) const = 0;
 	virtual operator std::string() const { return "token"; };
 };
 
+/*                                  NUMBER                                    */
 class Number: public Token {
 public:
 	double value;
@@ -20,11 +21,41 @@ public:
 	Number(double a_value): value(a_value) {}
 	operator double() { return value; }
 
-	bool is_type(std::string type_name) const override { return type_name == "Number"; }
+	bool is_type(const std::string& type_name) const override { return type_name == "Number"; }
 	operator std::string() const override { return std::to_string(value); }
 
 	static std::optional<Number> parse(std::string&);
+
+	bool operator==(const Number&) const;
+	bool operator<(const Number&) const;
 };
+/*                                 VARIABLE                                   */
+class Variable: public Token {
+	std::string name;
+	std::optional<Number> value;
+public:
+	Variable(const std::string&);
+	Variable(const std::string&, Number);
+	Variable(const Variable&);
+
+	bool is_type(const std::string&) const override;
+	operator std::string() const override;
+
+	bool is_known() const;
+	operator Number() const;
+
+	Variable operator= (const Number&);
+	Variable operator= (const Variable&);
+	bool operator== (const Number&) const;
+	bool operator== (const Variable&) const;
+	bool operator< (const Number&) const;
+	bool operator< (const Variable&) const;
+};
+namespace std {
+	template <> struct hash<Variable> {
+		size_t operator()(const Variable& x) const;
+	};
+}
 /*                                 FUNCTION                                   */
 class Function: public Token {
 	std::string name;
@@ -32,7 +63,7 @@ class Function: public Token {
 public:
 	Function(std::string,double(double));
 
-	bool is_type(std::string type_name) const override;
+	bool is_type(const std::string& type_name) const override;
 	operator std::string() const override;
 
 	Number operator() (Number);
@@ -63,7 +94,7 @@ public:
 	Operator(Operator::Type a_type): type(a_type) {}
 
 	static bool is_operator(char);
-	bool is_type(std::string type_name) const override { return type_name == "Operator"; }
+	bool is_type(const std::string& type_name) const override { return type_name == "Operator"; }
 	operator std::string() const override;
 
 	bool is_left_associative() {
@@ -80,8 +111,8 @@ bool operator<=(Operator const&, Operator const&);
 bool operator>=(Operator const&, Operator const&);
 
 class LeftParenthesis: public Token {
-	bool is_type(std::string type_name) const override { return type_name == "LeftParenthesis"; }
+	bool is_type(const std::string& type_name) const override { return type_name == "LeftParenthesis"; }
 };
 class RightParenthesis: public Token {
-	bool is_type(std::string type_name) const override { return type_name == "RightParenthesis"; }
+	bool is_type(const std::string& type_name) const override { return type_name == "RightParenthesis"; }
 };

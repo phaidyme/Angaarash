@@ -11,10 +11,36 @@ Calculator::Calculator() {
 	functions.insert({"arcsin", asin});
 	functions.insert({"arccos", acos});
 	functions.insert({"arctan", atan});
+
+	variables.insert({"pi", M_PI});
+	variables.insert({"e", M_E});
 }
 
-std::unordered_set<Function> Calculator::get_functions() {
-	return functions;
+std::optional<Number> Calculator::evaluate(
+	const std::vector<std::shared_ptr<Token>>& expression
+) {
+	// make sure all Variables are known and convert them to Numbers
+	std::vector<std::shared_ptr<Token>> exp_copy = {};
+	for(const auto& token: expression) {
+		if(token->is_type("Variable")) {
+			Variable x = *std::static_pointer_cast<Variable>(token);
+			if(!(x.is_known())) {
+				return std::nullopt;
+			}
+			exp_copy.push_back(std::make_shared<Number>(x));
+		}
+		else {
+			exp_copy.push_back(token);
+		}
+	}
+
+	auto rpn_exp = shunting_yard(exp_copy);
+	if(rpn_exp.has_value()) {
+		return evaluate_postfix_expression(*rpn_exp);
+	}
+	else {
+		return std::nullopt;
+	}
 }
 
 std::optional<Number> Calculator::evaluate_postfix_expression(
@@ -52,7 +78,6 @@ std::optional<Number> Calculator::evaluate_postfix_expression(
 }
 std::optional<std::queue<std::shared_ptr<Token>>>
 Calculator::shunting_yard(std::vector<std::shared_ptr<Token>> input) {
-	
 	std::shared_ptr<Token> token;
 	std::stack<std::shared_ptr<Token>> operator_stack;
 	std::queue<std::shared_ptr<Token>> output_queue;

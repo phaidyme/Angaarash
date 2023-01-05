@@ -28,6 +28,7 @@ class Console {
 	std::optional<std::vector<std::shared_ptr<Token>>>
 		parse_expression(std::string const&);
 	std::optional<std::shared_ptr<Token>> read_token(std::string &);
+	std::optional<Variable> read_variable(std::string &);
 	std::optional<Function> read_function(std::string &);
 public:
 	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
@@ -50,7 +51,7 @@ public:
 	}
 
 	void Draw(const char*, bool*);
-	void ExecCommand(std::string const&);
+	void ExecCommand(std::string&);
 
 	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data) {
 		Console* console = (Console*)data->UserData;

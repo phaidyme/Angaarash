@@ -4,7 +4,7 @@
 
 #include "Console.hpp"
 
-void Console::ExecCommand(std::string const& command_line) {
+void Console::ExecCommand(std::string& command_line) {
 		AddLog("# %s\n", command_line.c_str());
 
 		// Insert into history. First find match and delete it so it can be pushed to the back.
@@ -35,17 +35,12 @@ void Console::ExecCommand(std::string const& command_line) {
 			}
 		}
 		else if (auto expression = parse_expression(command_line)) {
-			if (auto postfix_expression = Calculator::shunting_yard(*expression)) {
-				if (auto value =
-					Calculator::evaluate_postfix_expression(*postfix_expression)) {
-					AddLog("%s\n", std::string(*value).c_str());
-				}
-				else {
-					AddLog("[error] expression is mathematically invalid");
-				}
+			std::optional<Number> x = calculator.evaluate(*expression);
+			if (x.has_value()) {
+				AddLog("%s\n", std::string(*x).c_str());
 			}
 			else {
-				AddLog("[error] expression is syntactically invalid");
+				AddLog("[error] invalid mathematical expression");
 			}
 		}
 		else {
@@ -199,6 +194,9 @@ std::optional<std::shared_ptr<Token>> Console::read_token(std::string & input) {
 	if (auto x = Number::parse(input)) {
 		retval = std::make_shared<Number>(*x);
 	}
+	else if (auto x = read_variable(input)) {
+		retval = std::make_shared<Variable>(*x);
+	}
 	else if (auto f = read_function(input)) {
 		retval = std::make_shared<Function>(*f);
 	}
@@ -220,9 +218,19 @@ std::optional<std::shared_ptr<Token>> Console::read_token(std::string & input) {
 
 	return retval;
 }
+std::optional<Variable> Console::read_variable(std::string & input) {
+	for(const auto& x: calculator.variables) {
+		std::string x_name = x;
+		if(input.find(x_name) == 0) {
+			input.erase(0, x_name.length());
+			return x;
+		}
+	}
+	return std::nullopt;
+}
 std::optional<Function> Console::read_function(std::string & input) {
-	for(auto const& f: calculator.get_functions()) {
-		std::string f_name = (std::string)f;
+	for(auto const& f: calculator.functions) {
+		std::string f_name = f;
 		if (input.find(f_name) == 0) {
 			input.erase(0, f_name.length());
 			return f;

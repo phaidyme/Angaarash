@@ -6,7 +6,55 @@
 
 #include "Token.hpp"
 
-/*                                NUMBER                                      */
+/*                                VARIABLE                                    */
+Variable::Variable(const std::string& n): name(n), value(std::nullopt) {}
+Variable::Variable(const std::string& n, Number x): name(n), value(x) {}
+Variable::Variable(const Variable& x): name(x.name), value(x.value) {}
+
+bool Variable::is_type(const std::string& type_name) const {
+	return type_name == "Variable";
+}
+Variable::operator std::string() const {
+	return name;
+}
+
+bool Variable::is_known() const {
+	return value.has_value();
+}
+Variable::operator Number() const {
+	assert(this->is_known());
+	return *(this->value);
+}
+Variable Variable::operator= (const Number& x) {
+	value = x;
+	return *this;
+}
+Variable Variable::operator= (const Variable& x) {
+	// TODO: make x = y without knowing what y is (maybe shared_ptr instead of optional?)
+	assert(x.value);
+	value = x.value;
+	return *this;
+}
+bool Variable::operator== (const Number& x) const {
+	assert(value);
+	return *value == x;
+}
+bool Variable::operator== (const Variable& x) const {
+	assert(x.value);
+	return this->operator==(*x.value);
+}
+bool Variable::operator< (const Number& x) const {
+	assert(value);
+	return *value < x;
+}
+bool Variable::operator< (const Variable& x) const {
+	assert(x.value);
+	return this->operator<(*x.value);
+}
+std::size_t std::hash<Variable>::operator()(const Variable& x) const {
+	return hash<string>()(x);
+}
+/*                                 NUMBER                                     */
 std::optional<Number> Number::parse(std::string& input) {
 	if(!isdigit(input[0])) return std::nullopt;
 
@@ -39,10 +87,17 @@ std::optional<Number> Number::parse(std::string& input) {
 	return number_val;
 }
 
+bool Number::operator==(const Number& x) const {
+	return value == x.value;
+}
+bool Number::operator<(const Number& x) const {
+	return value < x.value;
+}
+
 /*                                 FUNCTION                                   */
 Function::Function(std::string n, double f(double)): name(n), func(f) {}
 
-bool Function::is_type(std::string type_name) const {
+bool Function::is_type(const std::string& type_name) const {
 	return type_name == "Function";
 }
 Function::operator std::string() const {
