@@ -4,12 +4,6 @@
 
 #include "helper_functions.hpp"
 
-std::vector<std::string> split(std::string, char) {
-	std::vector<std::string> retval;
-
-	return retval;
-}
-
 int strnicmp(std::string const& s1, std::string const& s2, uint n) {
 	uint i=0;
 	int difference = toupper(s1[i]) - toupper(s2[i]);

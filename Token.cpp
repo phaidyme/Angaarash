@@ -17,43 +17,6 @@ bool Variable::is_type(const std::string& type_name) const {
 Variable::operator std::string() const {
 	return name;
 }
-
-bool Variable::is_known() const {
-	return value.has_value();
-}
-Variable::operator Number() const {
-	assert(this->is_known());
-	return *(this->value);
-}
-Variable Variable::operator= (const Number& x) {
-	value = x;
-	return *this;
-}
-Variable Variable::operator= (const Variable& x) {
-	// TODO: make x = y without knowing what y is (maybe shared_ptr instead of optional?)
-	assert(x.value);
-	value = x.value;
-	return *this;
-}
-bool Variable::operator== (const Number& x) const {
-	assert(value);
-	return *value == x;
-}
-bool Variable::operator== (const Variable& x) const {
-	assert(x.value);
-	return this->operator==(*x.value);
-}
-bool Variable::operator< (const Number& x) const {
-	assert(value);
-	return *value < x;
-}
-bool Variable::operator< (const Variable& x) const {
-	assert(x.value);
-	return this->operator<(*x.value);
-}
-std::size_t std::hash<Variable>::operator()(const Variable& x) const {
-	return hash<string>()(x);
-}
 /*                                 NUMBER                                     */
 std::optional<Number> Number::parse(std::string& input) {
 	if(!isdigit(input[0])) return std::nullopt;
@@ -95,7 +58,9 @@ bool Number::operator<(const Number& x) const {
 }
 
 /*                                 FUNCTION                                   */
-Function::Function(std::string n, double f(double)): name(n), func(f) {}
+Function::Function(const std::string& n, double f(double)): name(n), func(f) {}
+Function::Function(const std::string& n, std::function<Number(Number)> f):
+name(n), func(f) {}
 
 bool Function::is_type(const std::string& type_name) const {
 	return type_name == "Function";
@@ -106,14 +71,7 @@ Function::operator std::string() const {
 Number Function::operator() (Number n) {
 	return func(n);
 }
-bool Function::operator==(const Function& other) const {
-	return name == other.name;
-}
-
-std::size_t std::hash<Function>::operator()(const Function & f) const {
-	return hash<string>()(std::string(f));
-}
-
+/*                                 OPERATOR                                   */
 const Operator::Type Operator::types[5] = {
 	addition,subtraction,multiplication,division,exponentiation
 };

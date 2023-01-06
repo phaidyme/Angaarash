@@ -50,8 +50,11 @@ public:
 		items.push_back(std::string(buf));
 	}
 
-	void Draw(const char*, bool*);
 	void ExecCommand(std::string&);
+	void Draw(const char*, bool*);
+
+	std::optional<Number> evaluate(std::vector<std::shared_ptr<Token>>);
+	void let(std::string&);
 
 	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data) {
 		Console* console = (Console*)data->UserData;

@@ -1,6 +1,7 @@
 #include <ctype.h>
 
 #include <iostream>
+#include <algorithm>
 
 #include "Console.hpp"
 
@@ -34,14 +35,11 @@ void Console::ExecCommand(std::string& command_line) {
 				AddLog("%3d: %s\n", i, history[i].c_str());
 			}
 		}
+		else if (command_line.find("let ") == 0) {
+			let(command_line);
+		}
 		else if (auto expression = parse_expression(command_line)) {
-			std::optional<Number> x = calculator.evaluate(*expression);
-			if (x.has_value()) {
-				AddLog("%s\n", std::string(*x).c_str());
-			}
-			else {
-				AddLog("[error] invalid mathematical expression");
-			}
+			evaluate(*expression);
 		}
 		else {
 			AddLog("[error] Unknown command: '%s'\n", command_line.c_str());
@@ -161,7 +159,64 @@ void Console::Draw(const char* title, bool* p_open) {
 	ImGui::PopStyleColor();
 }
 
-
+std::optional<Number> Console::evaluate(std::vector<std::shared_ptr<Token>> expression) {
+	std::optional<Number> x = calculator.evaluate(expression);
+	if (x.has_value()) {
+		AddLog("%s\n", std::string(*x).c_str());
+	}
+	else {
+		AddLog("[error] invalid mathematical expression");
+	}
+	return x;
+}
+void Console::let(std::string& command) {
+	assert(command.find("let ") == 0);
+	command.erase(0, 4);
+	if (command.find('=') == std::string::npos) {
+		AddLog(
+			"[error] invalid second argument for command 'let' (expected '=')"
+		);
+	}
+	else {
+		std::string var_name = command.substr(0, command.find('='));
+		var_name.erase(
+			remove(var_name.begin(), var_name.end(), ' '), var_name.end()
+		);
+		bool is_alpha = true;
+		for(char c: var_name) {
+			if (!isalpha(c)) {
+				is_alpha = false;
+			}
+		}
+		if (!is_alpha) {
+			AddLog(
+				"[error] symbol '%s' is not a valid variable name\n",
+				var_name.c_str()
+			);
+		}
+		else if (calculator.variables.contains(var_name)) {
+			AddLog(
+				"[error] symbol '%s' already defined as equal to '%s'\n",
+				var_name.c_str(),
+				((std::string)calculator.variables.at(var_name)).c_str()
+			);
+		}
+		else if (calculator.functions.contains(var_name)) {
+			AddLog(
+				"[error] symbol '%s' already defined as a function\n",
+				var_name.c_str()
+			);
+		}
+		else {
+			command.erase(0, 1+command.find('='));
+			if (auto expression = parse_expression(command)) {
+				if (auto value = evaluate(*expression)) {
+					calculator.variables.insert({var_name, *value});
+				}
+			}
+		}
+	}
+}
 std::optional<std::vector<std::shared_ptr<Token>>>
 Console::parse_expression(std::string const& expression) {
 	// get rid of whitespace (and const)
@@ -220,20 +275,18 @@ std::optional<std::shared_ptr<Token>> Console::read_token(std::string & input) {
 }
 std::optional<Variable> Console::read_variable(std::string & input) {
 	for(const auto& x: calculator.variables) {
-		std::string x_name = x;
-		if(input.find(x_name) == 0) {
-			input.erase(0, x_name.length());
-			return x;
+		if(input.find(x.first) == 0) {
+			input.erase(0, x.first.length());
+			return Variable(x.first, x.second);
 		}
 	}
 	return std::nullopt;
 }
 std::optional<Function> Console::read_function(std::string & input) {
 	for(auto const& f: calculator.functions) {
-		std::string f_name = f;
-		if (input.find(f_name) == 0) {
-			input.erase(0, f_name.length());
-			return f;
+		if (input.find(f.first) == 0) {
+			input.erase(0, f.first.length());
+			return Function(f.first, f.second);
 		}
 	}
 	return std::nullopt;

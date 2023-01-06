@@ -24,10 +24,10 @@ std::optional<Number> Calculator::evaluate(
 	for(const auto& token: expression) {
 		if(token->is_type("Variable")) {
 			Variable x = *std::static_pointer_cast<Variable>(token);
-			if(!(x.is_known())) {
+			if(!(x.value)) {
 				return std::nullopt;
 			}
-			exp_copy.push_back(std::make_shared<Number>(x));
+			exp_copy.push_back(std::make_shared<Number>(*(x.value)));
 		}
 		else {
 			exp_copy.push_back(token);

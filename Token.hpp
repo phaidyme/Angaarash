@@ -31,50 +31,30 @@ public:
 };
 /*                                 VARIABLE                                   */
 class Variable: public Token {
+public:
 	std::string name;
 	std::optional<Number> value;
-public:
+
 	Variable(const std::string&);
 	Variable(const std::string&, Number);
 	Variable(const Variable&);
 
 	bool is_type(const std::string&) const override;
 	operator std::string() const override;
-
-	bool is_known() const;
-	operator Number() const;
-
-	Variable operator= (const Number&);
-	Variable operator= (const Variable&);
-	bool operator== (const Number&) const;
-	bool operator== (const Variable&) const;
-	bool operator< (const Number&) const;
-	bool operator< (const Variable&) const;
 };
-namespace std {
-	template <> struct hash<Variable> {
-		size_t operator()(const Variable& x) const;
-	};
-}
 /*                                 FUNCTION                                   */
 class Function: public Token {
 	std::string name;
 	std::function<Number(Number)> func;
 public:
-	Function(std::string,double(double));
+	Function(const std::string&,double(double));
+	Function(const std::string&,std::function<Number(Number)>);
 
 	bool is_type(const std::string& type_name) const override;
 	operator std::string() const override;
 
 	Number operator() (Number);
-
-	bool operator==(const Function&) const;
 };
-namespace std {
-	template <> struct hash<Function> {
-		size_t operator()(const Function & f) const;
-	};
-}
 
 class Operator: public Token {
 public:
