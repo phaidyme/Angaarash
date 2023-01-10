@@ -253,7 +253,7 @@ std::optional<std::shared_ptr<Token>> Console::read_token(std::string & input) {
 		retval = std::make_shared<Variable>(*x);
 	}
 	else if (auto f = read_function(input)) {
-		retval = std::make_shared<Function>(*f);
+		retval = std::make_shared<BasicFunction>(*f);
 	}
 	else if (Operator::is_operator(input[0])) {
 		retval = std::make_shared<Operator>(input[0]);
@@ -282,11 +282,11 @@ std::optional<Variable> Console::read_variable(std::string & input) {
 	}
 	return std::nullopt;
 }
-std::optional<Function> Console::read_function(std::string & input) {
+std::optional<BasicFunction> Console::read_function(std::string & input) {
 	for(auto const& f: calculator.functions) {
 		if (input.find(f.first) == 0) {
 			input.erase(0, f.first.length());
-			return Function(f.first, f.second);
+			return BasicFunction(f.first, f.second);
 		}
 	}
 	return std::nullopt;

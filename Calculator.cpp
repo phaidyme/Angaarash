@@ -57,8 +57,8 @@ std::optional<Number> Calculator::evaluate_postfix_expression(
 			Number n = *std::static_pointer_cast<Number>(token);
 			stack.push(n);
 		}
-		else if (token->is_type("Function")) {
-			Function f = *std::static_pointer_cast<Function>(token);
+		else if (token->is_type("BasicFunction")) {
+			BasicFunction f = *std::static_pointer_cast<BasicFunction>(token);
 			stack.top() = f(stack.top());
 		}
 		else if (token->is_type("Operator")) {
@@ -86,14 +86,14 @@ Calculator::shunting_yard(std::vector<std::shared_ptr<Token>> input) {
 		if (token->is_type("Number")) {
 			output_queue.push(token);
 		}
-		else if (token->is_type("Function")) {
+		else if (token->is_type("BasicFunction")) {
 			operator_stack.push(token);
 		}
 		else if (token->is_type("Operator")) {
 			Operator o1 = *std::static_pointer_cast<Operator>(token);
 			while (true) {
 				if (operator_stack.empty()) break;
-				if (operator_stack.top()->is_type("LeftParenthesis")) break; // note: tokens in operator_stack are always either Function, Operator or LeftBracket objects
+				if (operator_stack.top()->is_type("LeftParenthesis")) break; // note: tokens in operator_stack are always either BasicFunction, Operator or LeftBracket objects
 				Operator o2 = *std::static_pointer_cast<Operator>(operator_stack.top());
 
 				if (o2 > o1 || (o1 == o2 && o1.is_left_associative())) {
@@ -117,7 +117,7 @@ Calculator::shunting_yard(std::vector<std::shared_ptr<Token>> input) {
 			}
 			operator_stack.pop(); // get rid of the left parenthesis we just found
 
-			if (!operator_stack.empty() && operator_stack.top()->is_type("Function")) {
+			if (!operator_stack.empty() && operator_stack.top()->is_type("BasicFunction")) {
 				output_queue.push(operator_stack.top());
 				operator_stack.pop();
 			}

@@ -29,7 +29,7 @@ class Console {
 		parse_expression(std::string const&);
 	std::optional<std::shared_ptr<Token>> read_token(std::string &);
 	std::optional<Variable> read_variable(std::string &);
-	std::optional<Function> read_function(std::string &);
+	std::optional<BasicFunction> read_function(std::string &);
 public:
 	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
 		memset(InputBuf, 0, sizeof(InputBuf));

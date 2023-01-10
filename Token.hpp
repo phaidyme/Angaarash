@@ -43,12 +43,12 @@ public:
 	operator std::string() const override;
 };
 /*                                 FUNCTION                                   */
-class Function: public Token {
+class BasicFunction: public Token {
 	std::string name;
 	std::function<Number(Number)> func;
 public:
-	Function(const std::string&,double(double));
-	Function(const std::string&,std::function<Number(Number)>);
+	BasicFunction(const std::string&,double(double));
+	BasicFunction(const std::string&,std::function<Number(Number)>);
 
 	bool is_type(const std::string& type_name) const override;
 	operator std::string() const override;

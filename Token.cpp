@@ -58,17 +58,17 @@ bool Number::operator<(const Number& x) const {
 }
 
 /*                                 FUNCTION                                   */
-Function::Function(const std::string& n, double f(double)): name(n), func(f) {}
-Function::Function(const std::string& n, std::function<Number(Number)> f):
+BasicFunction::BasicFunction(const std::string& n, double f(double)): name(n), func(f) {}
+BasicFunction::BasicFunction(const std::string& n, std::function<Number(Number)> f):
 name(n), func(f) {}
 
-bool Function::is_type(const std::string& type_name) const {
-	return type_name == "Function";
+bool BasicFunction::is_type(const std::string& type_name) const {
+	return type_name == "BasicFunction";
 }
-Function::operator std::string() const {
+BasicFunction::operator std::string() const {
 	return name;
 }
-Number Function::operator() (Number n) {
+Number BasicFunction::operator() (Number n) {
 	return func(n);
 }
 /*                                 OPERATOR                                   */
