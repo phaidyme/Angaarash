@@ -18,63 +18,22 @@ Variable::operator std::string() const {
 	return name;
 }
 /*                                 NUMBER                                     */
-std::optional<Number> Number::parse(std::string& input) {
-	if(!isdigit(input[0])) return std::nullopt;
-
-	// count digits + possible decimal point
-	uint n = 0;
-	bool passed_decimal = false;
-	while (n < input.length()) {
-		if (isdigit(input[n])) {
-			n++;
-		}
-		else {
-			if (passed_decimal) {
-				break;
-			}
-			else {
-				if (input[n] == '.') {
-					passed_decimal = true;
-					n++;
-				}
-				else {
-					break;
-				}
-			}
-		}
-	}
-	double number_val = atof(input.c_str());
-
-	input.erase(0, n);
-
-	return number_val;
-}
-
 bool Number::operator==(const Number& x) const {
 	return value == x.value;
 }
 bool Number::operator<(const Number& x) const {
 	return value < x.value;
 }
-
-/*                                 FUNCTION                                   */
-BasicFunction::BasicFunction(const std::string& n, double f(double)): name(n), func(f) {}
-BasicFunction::BasicFunction(const std::string& n, std::function<Number(Number)> f):
-name(n), func(f) {}
-
-bool BasicFunction::is_type(const std::string& type_name) const {
-	return type_name == "BasicFunction";
-}
-BasicFunction::operator std::string() const {
-	return name;
-}
-Number BasicFunction::operator() (Number n) {
-	return func(n);
-}
 /*                                 OPERATOR                                   */
 const Operator::Type Operator::types[5] = {
 	addition,subtraction,multiplication,division,exponentiation
 };
+
+Operator::Operator(char c): type(static_cast<Operator::Type>(c)) {
+	if (!is_operator(c)) {
+		throw std::runtime_error("Operator::Operator(char): invalid operation");
+	}
+}
 
 Operator::operator std::string() const {
 	std::string retval;
@@ -95,7 +54,7 @@ double Operator::evaluate(Operator const& o, double a, double b) {
 	else if (o.type == multiplication) return a * b;
 	else if (o.type == division) return a / b;
 	else if (o.type == exponentiation) return pow(a, b);
-	else throw std::runtime_error("invalid operation");
+	else throw std::runtime_error("Operator::evaluate(): invalid operation");
 }
 
 bool operator==(Operator const& lhs, Operator const& rhs) {
@@ -118,3 +77,11 @@ bool operator< (Operator const& lhs, Operator const& rhs) {
 bool operator> (Operator const& lhs, Operator const& rhs) { return  rhs < lhs; }
 bool operator<=(Operator const& lhs, Operator const& rhs) { return !(lhs > rhs); }
 bool operator>=(Operator const& lhs, Operator const& rhs) { return !(lhs < rhs); }
+
+/* BRACKETS */
+LeftParenthesis::operator std::string() const {
+	return "(";
+}
+RightParenthesis::operator std::string() const {
+	return ")";
+}

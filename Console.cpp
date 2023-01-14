@@ -38,7 +38,7 @@ void Console::ExecCommand(std::string& command_line) {
 		else if (command_line.find("let ") == 0) {
 			let(command_line);
 		}
-		else if (auto expression = parse_expression(command_line)) {
+		else if (auto expression = parse<Expression>(command_line)) {
 			evaluate(*expression);
 		}
 		else {
@@ -159,7 +159,8 @@ void Console::Draw(const char* title, bool* p_open) {
 	ImGui::PopStyleColor();
 }
 
-std::optional<Number> Console::evaluate(std::vector<std::shared_ptr<Token>> expression) {
+std::optional<Number> Console::evaluate(Expression expression) {
+	Calculator& calculator = Calculator::get_instance();
 	std::optional<Number> x = calculator.evaluate(expression);
 	if (x.has_value()) {
 		AddLog("%s\n", std::string(*x).c_str());
@@ -170,124 +171,111 @@ std::optional<Number> Console::evaluate(std::vector<std::shared_ptr<Token>> expr
 	return x;
 }
 void Console::let(std::string& command) {
-	assert(command.find("let ") == 0);
-	command.erase(0, 4);
-	if (command.find('=') == std::string::npos) {
+	Calculator& calculator = Calculator::get_instance();
+
+	auto let = 4;
+	auto eqi = command.find('=');
+	auto lbi = command.find('(');
+	auto rbi = command.find(')');
+	auto end = command.length();
+
+	if (eqi == std::string::npos) {
 		AddLog(
-			"[error] invalid second argument for command 'let' (expected '=')"
+			"[error] invalid second argument for command 'let' (expected '=')\n"
 		);
+		return;
 	}
-	else {
-		std::string var_name = command.substr(0, command.find('='));
-		var_name.erase(
-			remove(var_name.begin(), var_name.end(), ' '), var_name.end()
-		);
-		bool is_alpha = true;
-		for(char c: var_name) {
-			if (!isalpha(c)) {
-				is_alpha = false;
-			}
+
+	if (lbi < eqi) {
+		if ( !( lbi<rbi && rbi<eqi )) {
+			AddLog("[error] mismatched parenthesis\n");
+			return;
 		}
-		if (!is_alpha) {
+
+		std::string function_name = command.substr(let, lbi-let);
+		trim_whitespace(function_name);
+		if (!is_alpha(function_name)) {
 			AddLog(
-				"[error] symbol '%s' is not a valid variable name\n",
-				var_name.c_str()
+				"[error]: symbol \"%s\" is not a valid function name\n",
+				function_name.c_str()
 			);
+			return;
 		}
-		else if (calculator.variables.contains(var_name)) {
+		if (calculator.variables.contains(function_name)) {
 			AddLog(
 				"[error] symbol '%s' already defined as equal to '%s'\n",
-				var_name.c_str(),
-				((std::string)calculator.variables.at(var_name)).c_str()
+				function_name.c_str(),
+				((std::string)calculator.variables.at(function_name)).c_str()
 			);
+			return;
 		}
-		else if (calculator.functions.contains(var_name)) {
+		if (calculator.functions.contains(function_name)) {
 			AddLog(
 				"[error] symbol '%s' already defined as a function\n",
-				var_name.c_str()
+				function_name.c_str()
+			);
+			return;
+		}
+
+		std::string argument_name = command.substr(1+lbi, rbi-(1+lbi));
+		trim_whitespace(argument_name);
+		if (!is_alpha(argument_name)) {
+			AddLog(
+				"[error]: symbol \"%s\" is not a valid argument name\n",
+				argument_name.c_str()
+			);
+			return;
+		}
+		if (calculator.functions.contains(argument_name)) {
+			AddLog(
+				"[error] symbol '%s' already defined as a function\n",
+				argument_name.c_str()
+			);
+			return;
+		}
+
+		std::string expression = command.substr(1+eqi, end-(1+eqi));
+		calculator.arguments.insert(argument_name);
+		if (auto parsed_expression = parse<Expression>(expression)) {
+			calculator.functions.emplace(
+				function_name, Function(argument_name, *parsed_expression)
 			);
 		}
 		else {
-			command.erase(0, 1+command.find('='));
-			if (auto expression = parse_expression(command)) {
-				if (auto value = evaluate(*expression)) {
-					calculator.variables.insert({var_name, *value});
-				}
+			AddLog("[error]: failed to parse function expression \"%s\"\n",
+			expression.c_str());
+		}
+		calculator.arguments.clear();
+		return;
+	}
+
+	std::string var_name = command.substr(let, eqi-let);
+	trim_whitespace(var_name);
+	if (!is_alpha(var_name)) {
+		AddLog(
+			"[error] symbol '%s' is not a valid variable name\n",
+			var_name.c_str()
+		);
+	}
+	else if (calculator.variables.contains(var_name)) {
+		AddLog(
+			"[error] symbol '%s' already defined as equal to '%s'\n",
+			var_name.c_str(),
+			((std::string)calculator.variables.at(var_name)).c_str()
+		);
+	}
+	else if (calculator.functions.contains(var_name)) {
+		AddLog(
+			"[error] symbol '%s' already defined as a function\n",
+			var_name.c_str()
+		);
+	}
+	else {
+		command.erase(0, 1+command.find('='));
+		if (auto expression = parse<Expression>(command)) {
+			if (auto value = evaluate(*expression)) {
+				calculator.variables.insert({var_name, *value});
 			}
 		}
 	}
-}
-std::optional<std::vector<std::shared_ptr<Token>>>
-Console::parse_expression(std::string const& expression) {
-	// get rid of whitespace (and const)
-	std::string s;
-	for(char c: expression) {
-		if (!isspace(c)) {
-			s.push_back(c);
-		}
-	}
-
-	std::optional<std::shared_ptr<Token>> token;
-	std::vector<std::shared_ptr<Token>> retval;
-	while(!s.empty()) {
-		token = read_token(s);
-		if (token.has_value()) {
-			retval.push_back(token.value());
-		}
-		else {
-			return std::nullopt;
-		}
-	}
-
-	return retval;
-}
-std::optional<std::shared_ptr<Token>> Console::read_token(std::string & input) {
-	assert(!input.empty());
-	
-	std::shared_ptr<Token> retval;
-
-	if (auto x = Number::parse(input)) {
-		retval = std::make_shared<Number>(*x);
-	}
-	else if (auto x = read_variable(input)) {
-		retval = std::make_shared<Variable>(*x);
-	}
-	else if (auto f = read_function(input)) {
-		retval = std::make_shared<BasicFunction>(*f);
-	}
-	else if (Operator::is_operator(input[0])) {
-		retval = std::make_shared<Operator>(input[0]);
-		input.erase(0, 1);
-	}
-	else if (input[0] == '(') {
-		retval = std::make_shared<LeftParenthesis>();
-		input.erase(0, 1);
-	}
-	else if (input[0] == ')') {
-		retval = std::make_shared<RightParenthesis>();
-		input.erase(0, 1);
-	}
-	else {
-		return std::nullopt;
-	}
-
-	return retval;
-}
-std::optional<Variable> Console::read_variable(std::string & input) {
-	for(const auto& x: calculator.variables) {
-		if(input.find(x.first) == 0) {
-			input.erase(0, x.first.length());
-			return Variable(x.first, x.second);
-		}
-	}
-	return std::nullopt;
-}
-std::optional<BasicFunction> Console::read_function(std::string & input) {
-	for(auto const& f: calculator.functions) {
-		if (input.find(f.first) == 0) {
-			input.erase(0, f.first.length());
-			return BasicFunction(f.first, f.second);
-		}
-	}
-	return std::nullopt;
 }

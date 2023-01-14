@@ -23,3 +23,20 @@ void strtrim(std::string & s) {
 		s.pop_back();
 	}
 }
+// both ends
+void trim_whitespace(std::string& s) {
+	int begin, end;
+	for(begin = 0; std::isspace(s[begin]); begin++) {}
+	for(end = s.length(); std::isspace(s[end-1]); end--) {}
+	
+	s = s.substr(begin, end-begin);
+}
+
+bool is_alpha(const std::string& s) {
+	for(char c: s) {
+		if (!std::isalpha(c)) {
+			return false;
+		}
+	}
+	return true;
+}

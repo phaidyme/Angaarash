@@ -12,6 +12,7 @@
 #include "Token.hpp"
 #include "Calculator.hpp"
 #include "helper_functions.hpp"
+#include "Parser.hpp"
 
 class Console {
 	char InputBuf[256];
@@ -21,23 +22,14 @@ class Console {
 	int HistoryPos;	// -1: new line, 0..History.Size-1 browsing history.
 	ImGuiTextFilter Filter;
 	bool AutoScroll, ScrollToBottom;
-
-	Calculator calculator;
-
-
-	std::optional<std::vector<std::shared_ptr<Token>>>
-		parse_expression(std::string const&);
-	std::optional<std::shared_ptr<Token>> read_token(std::string &);
-	std::optional<Variable> read_variable(std::string &);
-	std::optional<BasicFunction> read_function(std::string &);
 public:
 	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
 		memset(InputBuf, 0, sizeof(InputBuf));
-
 		commands.push_back("HELP");
 		commands.push_back("HISTORY");
 		commands.push_back("CLEAR");
 		commands.push_back("CLASSIFY");
+		commands.push_back("LET");
 	}
 
 	void AddLog(const char* fmt, ...) IM_FMTARGS(2) {
@@ -53,7 +45,7 @@ public:
 	void ExecCommand(std::string&);
 	void Draw(const char*, bool*);
 
-	std::optional<Number> evaluate(std::vector<std::shared_ptr<Token>>);
+	std::optional<Number> evaluate(Expression);
 	void let(std::string&);
 
 	static int TextEditCallbackStub(ImGuiInputTextCallbackData* data) {
