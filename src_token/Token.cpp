@@ -18,6 +18,9 @@ Variable::operator std::string() const {
 	return name;
 }
 /*                                 NUMBER                                     */
+bool Number::is_type(const std::string& t) const {
+	return t == "Number";
+}
 bool Number::operator==(const Number& x) const {
 	return value == x.value;
 }

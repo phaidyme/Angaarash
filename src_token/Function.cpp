@@ -3,9 +3,10 @@
 
 #include <iostream>
 
-#include "helper_functions.hpp"
+#include "../helper_functions.hpp"
+#include "../Calculator.hpp"
+
 #include "Function.hpp"
-#include "Calculator.hpp"
 
 /* BASIC FUNCTION */
 BasicFunction::BasicFunction(double(*f)(double)): function(f) {}

@@ -4,8 +4,8 @@
 
 #include "helper_functions.hpp"
 
-int strnicmp(std::string const& s1, std::string const& s2, uint n) {
-	uint i=0;
+int strnicmp(std::string const& s1, std::string const& s2, std::size_t n) {
+	std::size_t i=0;
 	int difference = toupper(s1[i]) - toupper(s2[i]);
 
 	while(i<n && difference == 0 && i < s1.length() && i < s2.length()) {

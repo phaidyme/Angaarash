@@ -11,6 +11,7 @@ class Token {
 public:
 	virtual bool is_type(const std::string&) const = 0;
 	virtual operator std::string() const { return "token"; };
+	virtual ~Token() = default;
 };
 typedef std::shared_ptr<Token> TokenPtr; // maybe make this a class later?
 
@@ -22,7 +23,7 @@ public:
 	Number(double a_value): value(a_value) {}
 	operator double() { return value; }
 
-	bool is_type(const std::string& type_name) const override { return type_name == "Number"; }
+	bool is_type(const std::string&) const override;
 	operator std::string() const override { return std::to_string(value); }
 
 	static std::optional<Number> parse(std::string&);

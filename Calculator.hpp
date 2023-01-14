@@ -5,8 +5,8 @@
 #include <memory>
 #include <unordered_set>
 
-#include "Token.hpp"
-#include "Function.hpp"
+#include "src_token/Token.hpp"
+#include "src_token/Function.hpp"
 	
 // Yeah it's a singleton, sue me.
 class Calculator {

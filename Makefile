@@ -14,8 +14,8 @@
 CXX = g++
 EXE = main.exe
 IMGUI_DIR = imgui
-UTIL_DIR = cpp_utils/src
-SOURCES = $(wildcard $(UTIL_DIR)/*.cpp) $(wildcard $(IMGUI_DIR)/*.cpp) $(wildcard *.cpp)
+TOKEN_DIR = src_token
+SOURCES = $(wildcard $(TOKEN_DIR)/*.cpp) $(wildcard $(IMGUI_DIR)/*.cpp) $(wildcard *.cpp)
 OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
 UNAME_S := $(shell uname -s)
 LINUX_GL_LIBS = -lGL
@@ -73,7 +73,7 @@ endif
 %.o:$(IMGUI_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:$(UTIL_DIR)/%.cpp
+%.o:$(TOKEN_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
