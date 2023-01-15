@@ -238,7 +238,10 @@ void Console::let(std::string& command) {
 		calculator.arguments.insert(argument_name);
 		if (auto parsed_expression = parse<Expression>(expression)) {
 			calculator.functions.emplace(
-				function_name, Function(argument_name, *parsed_expression)
+				function_name, Function(
+					function_name,
+					argument_name,
+					*parsed_expression)
 			);
 		}
 		else {

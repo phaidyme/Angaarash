@@ -6,33 +6,16 @@
 template<>
 std::optional<Number>
 parse<Number>(std::string& input) {
-	if(!isdigit(input[0])) return std::nullopt;
-
-	// count digits + possible decimal point
-	uint n = 0;
-	bool passed_decimal = false;
-	while (n < input.length()) {
-		if (isdigit(input[n])) {
-			n++;
-		}
-		else {
-			if (passed_decimal) {
-				break;
-			}
-			else {
-				if (input[n] == '.') {
-					passed_decimal = true;
-					n++;
-				}
-				else {
-					break;
-				}
-			}
-		}
+	std::size_t i;
+	try {
+		auto retval = std::stod(input, &i);
+		input.erase(0, i);
+		return retval;
+	} catch(std::invalid_argument& e1) {
+		return std::nullopt;
+	} catch(std::out_of_range& e2) {
+		return std::nullopt;
 	}
-	double number_val = atof(input.c_str());
-	input.erase(0, n);
-	return number_val;
 }
 
 template<>

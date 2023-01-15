@@ -12,12 +12,28 @@ Calculator& Calculator::get_instance() {
 }
 
 Calculator::Calculator() {
-	functions.emplace("sin", Function(BasicFunction(sin), Variable("theta")));
-	functions.emplace("cos", Function(BasicFunction(cos), Variable("theta")));
-	functions.emplace("tan", Function(BasicFunction(tan), Variable("theta")));
-	functions.emplace("arcsin", Function(BasicFunction(asin), Variable("x")));
-	functions.emplace("arccos", Function(BasicFunction(acos), Variable("x")));
-	functions.emplace("arccos", Function(BasicFunction(atan), Variable("x")));
+	// I've rearranged this data so many times, might as well
+	std::vector<double(*)(double)> default_functions = {
+		sin, cos, tan,
+		asin, acos, atan
+	};
+	std::vector<std::string> default_function_names = {
+		"sin", "cos", "tan",
+		"arcsin", "arccos", "arctan"
+	};
+	std::vector<std::string> default_argument_names {
+		"theta", "theta", "theta",
+		"x", "x", "x"
+	};
+	for(std::size_t i=0; i<6; i++) {
+		functions.emplace(
+			default_function_names[i],
+			Function(
+				BasicFunction(default_function_names[i], default_functions[i]),
+				Variable(default_argument_names[i])
+			)
+		);
+	}
 	
 	variables.emplace("pi", M_PI);
 	variables.emplace("e", M_E);
@@ -42,8 +58,7 @@ std::optional<Number> Calculator::evaluate(Expression& expression) {
 		}
 	}
 
-	auto rpn_exp = shunting_yard(exp_copy);
-	if(rpn_exp.has_value()) {
+	if(auto rpn_exp = shunting_yard(exp_copy)) {
 		return evaluate_postfix_expression(*rpn_exp);
 	}
 	else {
@@ -66,7 +81,9 @@ std::optional<Number> Calculator::evaluate_postfix_expression(
 			stack.push(n);
 		}
 		else if (token->is_type("Function")) {
-			std::shared_ptr<Function> f = std::static_pointer_cast<Function>(token);
+			std::shared_ptr<Function> f = std::static_pointer_cast<Function>(
+				token
+			);
 			if (auto x = f->operator()(stack.top())) {
 				stack.top() = *x;
 			}
@@ -79,6 +96,9 @@ std::optional<Number> Calculator::evaluate_postfix_expression(
 			stack.top() = f(stack.top());
 		}
 		else if (token->is_type("Operator")) {
+			if (stack.size() < 2) {
+				return std::nullopt;
+			}
 			Operator o = *std::static_pointer_cast<Operator>(token);
 			double rhs = stack.top();
 			stack.pop();
@@ -134,7 +154,12 @@ Calculator::shunting_yard(Expression input) {
 			}
 			operator_stack.pop(); // get rid of the left parenthesis we just found
 
-			if (!operator_stack.empty() && operator_stack.top()->is_type("BasicFunction")) {
+			if (
+				!operator_stack.empty() && (
+					operator_stack.top()->is_type("BasicFunction") ||
+					operator_stack.top()->is_type("Function")
+				)
+			) {
 				output_queue.push(operator_stack.top());
 				operator_stack.pop();
 			}

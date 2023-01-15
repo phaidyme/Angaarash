@@ -15,7 +15,12 @@ bool Variable::is_type(const std::string& type_name) const {
 	return type_name == "Variable";
 }
 Variable::operator std::string() const {
-	return name;
+	if (value) {
+		return name + '(' + (std::string)(*value) + ')';
+	}
+	else {
+		return name;
+	}
 }
 /*                                 NUMBER                                     */
 bool Number::is_type(const std::string& t) const {

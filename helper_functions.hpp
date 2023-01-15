@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 
+#define print(x) std::cout << x
 #define println(x) std::cout << x << std::endl;
 
 std::vector<std::string> split(std::string const&, char);

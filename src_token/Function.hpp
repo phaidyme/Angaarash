@@ -4,22 +4,25 @@
 #include "Expression.hpp"
 
 class BasicFunction: public Token {
-	double (*function)(double);
+public: std::string name;
+private: double (*function)(double);
 public:
-	BasicFunction(double(*)(double));
+	BasicFunction(std::string, double(*)(double));
 
 	bool is_type(const std::string&) const override;
+	operator std::string() const override;
 	
 	Number operator() (Number n) const;
 };
 
 class Function: public Token {
+	std::string name;
 	Variable argument;
 	Expression expression;
 
 	Function(Variable);
 public:
-	Function(Variable, Expression);
+	Function(std::string, Variable, Expression);
 	Function(BasicFunction, Variable);
 
 

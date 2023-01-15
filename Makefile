@@ -13,10 +13,11 @@
 
 CXX = g++
 EXE = main.exe
+OBJ_DIR = o
 IMGUI_DIR = imgui
 TOKEN_DIR = src_token
 SOURCES = $(wildcard $(TOKEN_DIR)/*.cpp) $(wildcard $(IMGUI_DIR)/*.cpp) $(wildcard *.cpp)
-OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 UNAME_S := $(shell uname -s)
 LINUX_GL_LIBS = -lGL
 
@@ -67,13 +68,13 @@ endif
 ## BUILD RULES
 ##---------------------------------------------------------------------
 
-%.o:%.cpp
+$(OBJ_DIR)/%.o:%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:$(IMGUI_DIR)/%.cpp
+$(OBJ_DIR)/%.o:$(IMGUI_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o:$(TOKEN_DIR)/%.cpp
+$(OBJ_DIR)/%.o:$(TOKEN_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
