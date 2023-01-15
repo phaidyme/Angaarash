@@ -16,22 +16,12 @@
 #include "Parser.hpp"
 
 class Console {
-	char InputBuf[256];
 	std::vector<std::string> items;
 	std::vector<std::string> commands;
 	std::vector<std::string> history;
-	int HistoryPos;	// -1: new line, 0..History.Size-1 browsing history.
-	ImGuiTextFilter Filter;
-	bool AutoScroll, ScrollToBottom;
+	int HistoryPos;	// -1: new line, 0..History.Size-1 browsing history
 public:
-	Console(): HistoryPos(-1), AutoScroll(true), ScrollToBottom(false) {
-		memset(InputBuf, 0, sizeof(InputBuf));
-		commands.push_back("HELP");
-		commands.push_back("HISTORY");
-		commands.push_back("CLEAR");
-		commands.push_back("CLASSIFY");
-		commands.push_back("LET");
-	}
+	Console();
 
 	void AddLog(const char* fmt, ...) IM_FMTARGS(2) {
 		char buf[1024];
@@ -43,8 +33,8 @@ public:
 		items.push_back(std::string(buf));
 	}
 
-	void ExecCommand(std::string&);
-	void Draw(const char*, bool*);
+	void process_command(std::string&);
+	void render();
 
 	std::optional<Number> evaluate(Expression);
 	void let(std::string&);
@@ -55,7 +45,6 @@ public:
 	}
 
 	int TextEditCallback(ImGuiInputTextCallbackData* data) {
-		//AddLog("cursor: %d, selection: %d-%d", data->CursorPos, data->SelectionStart, data->SelectionEnd);
 		switch (data->EventFlag) {
 		case ImGuiInputTextFlags_CallbackCompletion:
 		{
@@ -151,4 +140,8 @@ public:
 		}
 		return 0;
 	}
+private:
+	void render_console(ImVec2, ImVec2);
+	void render_memory(ImVec2, ImVec2);
+	void render_prompt(ImVec2, ImVec2);
 };

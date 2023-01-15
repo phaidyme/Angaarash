@@ -76,9 +76,7 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	// Our state
-	bool show_console = true;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f); // no idea what this is
 
 	// Main loop
 	while (!glfwWindowShouldClose(window)) {
@@ -89,8 +87,7 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// do stuff
-    	console.Draw("Example: Console", &show_console);
+    	console.render();
 
 		// Rendering
 		ImGui::Render();

@@ -5,158 +5,57 @@
 
 #include "Console.hpp"
 
-void Console::ExecCommand(std::string& command_line) {
-		AddLog("# %s\n", command_line.c_str());
+Console::Console(): HistoryPos(-1) {
+	commands.push_back("HELP");
+	commands.push_back("HISTORY");
+	commands.push_back("CLEAR");
+	commands.push_back("CLASSIFY");
+	commands.push_back("LET");
+}
 
-		// Insert into history. First find match and delete it so it can be pushed to the back.
-		// This isn't trying to be smart or optimal.
-		HistoryPos = -1;
-		for (int i = history.size() - 1; i >= 0; i--) {
-			if (stricmp(history[i], command_line) == 0) {
-				history.erase(history.begin() + i);
-				break;
-			}
-		}
-		history.push_back(command_line);
-
-		// Process command
-		if (stricmp(command_line, "CLEAR") == 0) {
-			items.clear();
-		}
-		else if (stricmp(command_line, "HELP") == 0) {
-			AddLog("Commands:");
-			for(auto const& command: commands) {
-				AddLog("- %s", command.c_str());
-			}
-		}
-		else if (stricmp(command_line, "HISTORY") == 0) {
-			uint i = std::max(0, (int)history.size() - 10);
-			for (; i < history.size(); i++) {
-				AddLog("%3d: %s\n", i, history[i].c_str());
-			}
-		}
-		else if (command_line.find("let ") == 0) {
-			let(command_line);
-		}
-		else if (auto expression = parse<Expression>(command_line)) {
-			evaluate(*expression);
-		}
-		else {
-			AddLog("[error] Unknown command: '%s'\n", command_line.c_str());
-		}
-
-		// On command input, we scroll to bottom even if AutoScroll==false
-		ScrollToBottom = true;
-	}
-
-void Console::Draw(const char* title, bool* p_open) {
-	ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-	if (!ImGui::Begin(title, p_open, ImGuiWindowFlags_NoTitleBar)) {
-		ImGui::End();
+void Console::process_command(std::string& command_line) {
+	if (command_line.length() == 0) {
 		return;
 	}
 
+	AddLog("# %s\n", command_line.c_str());
 
-	// As a specific feature guaranteed by the library, after calling Begin() the last Item represent the title bar.
-	// So e.g. IsItemHovered() will return true when hovering the title bar.
-	// Here we create a context menu only available from the title bar.
-	if (ImGui::BeginPopupContextItem()) {
-		if (ImGui::MenuItem("Close Console")) {
-			*p_open = false;
+	// Insert into history. First find match and delete it so it can be pushed to the back.
+	// This isn't trying to be smart or optimal.
+	HistoryPos = -1;
+	for (int i = history.size() - 1; i >= 0; i--) {
+		if (stricmp(history[i], command_line) == 0) {
+			history.erase(history.begin() + i);
+			break;
 		}
-		ImGui::EndPopup();
 	}
+	history.push_back(command_line);
 
-	// Options menu
-	ImGui::Checkbox("Auto-scroll", &AutoScroll);
-	ImGui::SameLine();
-	ImGui::Dummy(ImVec2(ImGui::GetIO().DisplaySize.x - 400, 0));
-	ImGui::SameLine();
-	Filter.Draw("Filter", 180);
-	ImGui::Separator();
-
-	const float footer_height = ImGui::GetStyle().ItemSpacing.y +
-								ImGui::GetFrameHeightWithSpacing();
-	if (ImGui::BeginChild(
-			"ScrollingRegion",
-			ImVec2(0, -footer_height),
-			false,
-			ImGuiWindowFlags_HorizontalScrollbar)
-		) {
-		if (ImGui::BeginPopupContextWindow()) {
-			if (ImGui::Selectable("Clear")) {
-				items.clear();
-			}
-			ImGui::EndPopup();
+	// Process command
+	if (stricmp(command_line, "CLEAR") == 0) {
+		items.clear();
+	}
+	else if (stricmp(command_line, "HELP") == 0) {
+		AddLog("Commands:");
+		for(auto const& command: commands) {
+			AddLog("- %s", command.c_str());
 		}
-
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-		
-		for (uint i = 0; i < items.size(); i++) {
-			std::string const& item = items[i];
-			if (!Filter.PassFilter(item.c_str())) {
-				continue;
-			}
-			if (strstr(item.c_str(), "[error]")) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f));
-			}
-			else if (strncmp(item.c_str(), "# ", 2) == 0) {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.8f, 0.6f, 1.0f));
-			}
-			else {
-				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-			}
-			ImGui::TextUnformatted(item.c_str());
-			ImGui::PopStyleColor();
+	}
+	else if (stricmp(command_line, "HISTORY") == 0) {
+		uint i = std::max(0, (int)history.size() - 10);
+		for (; i < history.size(); i++) {
+			AddLog("%3d: %s\n", i, history[i].c_str());
 		}
-
-		// Keep up at the bottom of the scroll region if we were already at the bottom at the beginning of the frame.
-		// Using a scrollbar or mouse-wheel will take away from the bottom edge.
-		if (ScrollToBottom || (AutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
-			ImGui::SetScrollHereY(1.0f);
-		ScrollToBottom = false;
-
-		ImGui::PopStyleVar();
 	}
-	ImGui::EndChild();
-	ImGui::Separator();
-
-	// Command-line
-	bool reclaim_focus = false;
-	ImGuiInputTextFlags input_text_flags =
-		ImGuiInputTextFlags_EnterReturnsTrue |
-		ImGuiInputTextFlags_EscapeClearsAll |
-		ImGuiInputTextFlags_CallbackCompletion |
-		ImGuiInputTextFlags_CallbackHistory;
-	if (ImGui::InputText(
-			"Input",
-			InputBuf,
-			IM_ARRAYSIZE(InputBuf),
-			input_text_flags,
-			&TextEditCallbackStub,
-			(void*)this)
-	) {
-		std::string s = InputBuf;
-		strtrim(s);
-		if (!s.empty()) {
-			ExecCommand(s);
-		}
-		s = "";
-		reclaim_focus = true;
+	else if (command_line.find("let ") == 0) {
+		let(command_line);
 	}
-
-	// Auto-focus on window apparition
-	ImGui::SetItemDefaultFocus();
-	if (reclaim_focus) {
-		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+	else if (auto expression = parse<Expression>(command_line)) {
+		evaluate(*expression);
 	}
-
-	ImGui::End();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
+	else {
+		AddLog("[error] Unknown command: '%s'\n", command_line.c_str());
+	}
 }
 
 std::optional<Number> Console::evaluate(Expression expression) {
@@ -170,6 +69,7 @@ std::optional<Number> Console::evaluate(Expression expression) {
 	}
 	return x;
 }
+
 void Console::let(std::string& command) {
 	Calculator& calculator = Calculator::get_instance();
 
@@ -281,4 +181,123 @@ void Console::let(std::string& command) {
 			}
 		}
 	}
+}
+
+void Console::render() {
+	ImVec2 total = ImGui::GetIO().DisplaySize;
+
+	auto x1 = total.x * 0.7;
+	auto x2 = total.x - x1;
+
+	auto y2 = ImGui::GetStyle().ItemSpacing.y + 10 +
+		ImGui::GetFrameHeightWithSpacing();
+	auto y1 = total.y - y2;
+
+	render_console(ImVec2(0,0), ImVec2(x1,y1));
+	render_memory(ImVec2(x1,0), ImVec2(x2,y1));
+	render_prompt(ImVec2(0,y1), ImVec2(total.x,y2));
+}
+
+void Console::render_console(ImVec2 position, ImVec2 size) {
+	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(position);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+	if (!ImGui::Begin("console", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+		ImGui::End();
+		return;
+	}
+
+	// Tighten spacing
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
+	auto error_colour = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+	auto command_colour = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
+	auto response_colour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	
+	for (uint i = 0; i < items.size(); i++) {
+		std::string const& item = items[i];
+		if (strstr(item.c_str(), "[error]")) {
+			ImGui::PushStyleColor(ImGuiCol_Text, error_colour);
+		}
+		else if (strncmp(item.c_str(), "# ", 2) == 0) {
+			ImGui::PushStyleColor(ImGuiCol_Text, command_colour);
+		}
+		else {
+			ImGui::PushStyleColor(ImGuiCol_Text, response_colour);
+		}
+		ImGui::TextUnformatted(item.c_str());
+		ImGui::PopStyleColor();
+	}
+
+	if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+		ImGui::SetScrollHereY(1.0f);
+	}
+
+	ImGui::PopStyleVar();
+	ImGui::End();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+}
+
+void Console::render_memory(ImVec2 position, ImVec2 size) {
+	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(position);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+	if (!ImGui::Begin("memory", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+		ImGui::End();
+		return;
+	}
+	
+	
+
+	ImGui::End();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+}
+
+void Console::render_prompt(ImVec2 position, ImVec2 size) {
+	ImGui::SetNextWindowSize(size);
+	ImGui::SetNextWindowPos(position);
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+	if (!ImGui::Begin("prompt", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+		ImGui::End();
+		return;
+	}
+	// Command-line
+	bool reclaim_focus = false;
+	std::size_t buffer_size = 256;
+	char buffer[buffer_size];
+	memset(buffer, 0, buffer_size);
+	ImGuiInputTextFlags input_text_flags =
+		ImGuiInputTextFlags_EnterReturnsTrue |
+		ImGuiInputTextFlags_EscapeClearsAll |
+		ImGuiInputTextFlags_CallbackCompletion |
+		ImGuiInputTextFlags_CallbackHistory;
+	if (ImGui::InputText(
+			"Input",
+			buffer,
+			buffer_size,
+			input_text_flags,
+			&TextEditCallbackStub,
+			(void*)this)
+	) {
+		std::string input = buffer;
+		process_command(input);
+		ImGui::SetScrollHereY(1.0f);
+		reclaim_focus = true;
+	}
+
+	// Auto-focus on window apparition
+	ImGui::SetItemDefaultFocus();
+	if (reclaim_focus) {
+		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+	}
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::End();
 }
