@@ -30,4 +30,7 @@ public:
 	operator std::string() const override;
 
 	std::optional<Number> operator() (Number);
+
+	std::string get_signature() const;
+	std::string get_expression() const;
 };

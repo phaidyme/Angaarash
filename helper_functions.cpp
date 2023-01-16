@@ -40,3 +40,10 @@ bool is_alpha(const std::string& s) {
 	}
 	return true;
 }
+
+bool string_length_comp::operator()(std::string a, std::string b) const {
+	if (a.length() == b.length()) {
+		return a < b;
+	}
+	return a.length() > b.length();
+}

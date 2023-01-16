@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <string>
 
@@ -23,3 +25,8 @@ void trim_leading(std::string& s) {
 void trim_whitespace(std::string&);
 
 bool is_alpha(const std::string&);
+
+class string_length_comp {
+public:
+	bool operator ()(std::string, std::string) const;
+};

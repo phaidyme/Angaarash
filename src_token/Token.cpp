@@ -16,7 +16,7 @@ bool Variable::is_type(const std::string& type_name) const {
 }
 Variable::operator std::string() const {
 	if (value) {
-		return name + '(' + (std::string)(*value) + ')';
+		return name + ':' + (std::string)(*value);
 	}
 	else {
 		return name;

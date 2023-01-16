@@ -19,7 +19,8 @@ Calculator::Calculator() {
 	};
 	std::vector<std::string> default_function_names = {
 		"sin", "cos", "tan",
-		"arcsin", "arccos", "arctan"
+		"arcsin", "arccos", "arctan",
+		"log"
 	};
 	std::vector<std::string> default_argument_names {
 		"theta", "theta", "theta",
@@ -40,21 +41,21 @@ Calculator::Calculator() {
 }
 
 std::optional<Number> Calculator::evaluate(Expression& expression) {
-	if (expression.is_empty()) {
+	if (expression.expression.empty()) {
 		return std::nullopt;
 	}
 	// make sure all Variables are known and convert them to Numbers
 	Expression exp_copy = {};
-	for(const auto& token: expression) {
+	for(const auto& token: expression.expression) {
 		if(token->is_type("Variable")) {
 			Variable x = *std::static_pointer_cast<Variable>(token);
 			if(!(x.value)) {
 				return std::nullopt;
 			}
-			exp_copy.push(std::make_shared<Number>(*(x.value)));
+			exp_copy.expression.push_back(std::make_shared<Number>(*(x.value)));
 		}
 		else {
-			exp_copy.push(token);
+			exp_copy.expression.push_back(token);
 		}
 	}
 
@@ -119,7 +120,7 @@ Calculator::shunting_yard(Expression input) {
 	std::stack<std::shared_ptr<Token>> operator_stack;
 	std::queue<std::shared_ptr<Token>> output_queue;
 
-	for(auto const& token: input) {
+	for(auto const& token: input.expression) {
 		if (token->is_type("Number")) {
 			output_queue.push(token);
 		}

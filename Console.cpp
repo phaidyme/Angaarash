@@ -54,7 +54,7 @@ void Console::process_command(std::string& command_line) {
 		evaluate(*expression);
 	}
 	else {
-		AddLog("[error] Unknown command: '%s'\n", command_line.c_str());
+		AddLog("[error] Unknown command");
 	}
 }
 
@@ -211,7 +211,7 @@ void Console::render_console(ImVec2 position, ImVec2 size) {
 	// Tighten spacing
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 	auto error_colour = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
-	auto command_colour = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
+	auto command_colour = ImVec4(0.7f, 0.56f, 0.42f, 1.0f);
 	auto response_colour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 	
 	for (uint i = 0; i < items.size(); i++) {
@@ -249,7 +249,23 @@ void Console::render_memory(ImVec2 position, ImVec2 size) {
 		return;
 	}
 	
-	
+	auto& calculator = Calculator::get_instance();
+	if (ImGui::BeginChild("Functions", ImVec2(0, size.y / 2))) {
+		for(const auto& function: calculator.functions) {
+			auto f_sig = function.second.get_signature();
+			auto f_exp = function.second.get_expression();
+			auto f_all = f_sig + " = " + f_exp;
+			ImGui::TextUnformatted(f_all.c_str());
+		}
+	}
+	ImGui::EndChild();
+	if (ImGui::BeginChild("Variables", ImVec2(0, size.y / 2))) {
+		for(const auto& variable: calculator.variables) {
+			std::string tmp = variable.first + " = " + (std::string)variable.second;
+			ImGui::TextUnformatted(tmp.c_str());
+		}
+	}
+	ImGui::EndChild();
 
 	ImGui::End();
 	ImGui::PopStyleColor();

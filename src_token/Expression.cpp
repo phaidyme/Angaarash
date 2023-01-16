@@ -16,18 +16,27 @@ Expression::operator std::string() const {
 	return retval;
 }
 
-void Expression::push(TokenPtr tp) {
-	expression.push_back(tp);
+void Expression::push(TokenPtr token) {
+	expression.push_back(token);
 }
-
-bool Expression::is_empty() {
+TokenPtr Expression::operator [] (std::size_t i) {
+	return expression[i];
+}
+bool Expression::is_empty() const {
 	return expression.empty();
 }
-
+std::size_t Expression::length() const {
+	return expression.size();
+}
 std::vector<TokenPtr>::iterator Expression::begin() {
 	return expression.begin();
 }
-
 std::vector<TokenPtr>::iterator Expression::end() {
 	return expression.end();
+}
+std::vector<TokenPtr>::const_iterator Expression::begin() const {
+	return expression.cbegin();
+}
+std::vector<TokenPtr>::const_iterator Expression::end() const {
+	return expression.cend();
 }
