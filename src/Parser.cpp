@@ -94,9 +94,6 @@ parse<TokenPtr>(std::string& input) {
 template<>
 std::optional<Expression>
 parse<Expression>(std::string& input) {
-	println(input);
-
-	bool is_special_case;
 	std::optional<TokenPtr> token;
 	Expression retval;
 
@@ -111,12 +108,13 @@ parse<Expression>(std::string& input) {
 
 	trim_leading<' '>(input);
 	while(!input.empty()) {
-		bool	add = input[0] == '+',
-				sub = input[0] == '-',
-				var = (*token)->is_type("Variable"),
-				num = (*token)->is_type("Number"),
-				lpar = (*token)->is_type("LeftParenthesis"),
-				op = (*token)->is_type("Operator");
+		bool
+			add = input[0] == '+',
+			sub = input[0] == '-',
+			var = (*token)->is_type("Variable"),
+			num = (*token)->is_type("Number"),
+			lpar = (*token)->is_type("LeftParenthesis"),
+			op = (*token)->is_type("Operator");
 
 		if ((add || sub) && !(lpar || op)) {
 			token = std::make_shared<Operator>(input[0]);
@@ -124,12 +122,12 @@ parse<Expression>(std::string& input) {
 		}
 		else token = parse<TokenPtr>(input);
 
-		if (num || var) {
-			if ((*token)->is_type("LeftParenthesis") ||
-				(*token)->is_type("Function") ||
-				(*token)->is_type("Variable")) {
-				retval.push(std::make_shared<Operator>(Operator::multiplication));
-			}
+		if ((num || var) && (
+			(*token)->is_type("LeftParenthesis") ||
+			(*token)->is_type("Function") ||
+			(*token)->is_type("Variable")
+		)) {
+			retval.push(std::make_shared<Operator>(Operator::multiplication));
 		}
 
 		if (token) retval.push(*token);
@@ -137,7 +135,5 @@ parse<Expression>(std::string& input) {
 
 		trim_leading<' '>(input);
 	}
-
-	println((std::string)retval);
 	return retval;
 }

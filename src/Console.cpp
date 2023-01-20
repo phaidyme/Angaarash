@@ -184,8 +184,16 @@ void Console::let(std::string& command) {
 }
 
 void Console::render() {
-	ImVec2 total = ImGui::GetIO().DisplaySize;
+	auto white = ImVec4(1.0f,1.0f,1.0f,1.0f);
+	auto black = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+	auto orange = ImVec4(1.0f,0.4f,0.1f,1.0f);
 
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, white);
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, white);
+	ImGui::PushStyleColor(ImGuiCol_Text, black);
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, orange);
+
+	ImVec2 total = ImGui::GetIO().DisplaySize;
 	auto x1 = total.x * 0.7;
 	auto x2 = total.x - x1;
 
@@ -196,13 +204,16 @@ void Console::render() {
 	render_console(ImVec2(0,0), ImVec2(x1,y1));
 	render_memory(ImVec2(x1,0), ImVec2(x2,y1));
 	render_prompt(ImVec2(0,y1), ImVec2(total.x,y2));
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 }
 
 void Console::render_console(ImVec2 position, ImVec2 size) {
 	ImGui::SetNextWindowSize(size);
 	ImGui::SetNextWindowPos(position);
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 	if (!ImGui::Begin("console", nullptr, ImGuiWindowFlags_NoTitleBar)) {
 		ImGui::End();
 		return;
@@ -235,22 +246,14 @@ void Console::render_console(ImVec2 position, ImVec2 size) {
 
 	ImGui::PopStyleVar();
 	ImGui::End();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
 }
 
 void Console::render_memory(ImVec2 position, ImVec2 size) {
-	ImGui::SetNextWindowSize(size);
-	ImGui::SetNextWindowPos(position);
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-	if (!ImGui::Begin("memory", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-		ImGui::End();
-		return;
-	}
-	
 	auto& calculator = Calculator::get_instance();
-	if (ImGui::BeginChild("Functions", ImVec2(0, size.y / 2))) {
+	
+	ImGui::SetNextWindowPos(position);
+	ImGui::SetNextWindowSize(ImVec2(size.x, size.y / 2));
+	if (ImGui::Begin("Functions", nullptr, ImGuiWindowFlags_NoCollapse)) {
 		for(const auto& function: calculator.functions) {
 			auto f_sig = function.second.get_signature();
 			auto f_exp = function.second.get_expression();
@@ -258,62 +261,53 @@ void Console::render_memory(ImVec2 position, ImVec2 size) {
 			ImGui::TextUnformatted(f_all.c_str());
 		}
 	}
-	ImGui::EndChild();
-	if (ImGui::BeginChild("Variables", ImVec2(0, size.y / 2))) {
+	ImGui::End();
+
+	ImGui::SetNextWindowPos(ImVec2(position.x, position.y + size.y / 2));
+	ImGui::SetNextWindowSize(ImVec2(size.x, size.y / 2));
+	if (ImGui::Begin("Variables", nullptr, ImGuiWindowFlags_NoCollapse)) {
 		for(const auto& variable: calculator.variables) {
 			std::string tmp = variable.first + " = " + (std::string)variable.second;
 			ImGui::TextUnformatted(tmp.c_str());
 		}
 	}
-	ImGui::EndChild();
-
 	ImGui::End();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
 }
 
 void Console::render_prompt(ImVec2 position, ImVec2 size) {
 	ImGui::SetNextWindowSize(size);
 	ImGui::SetNextWindowPos(position);
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.0f,1.0f,1.0f,1.0f));
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
-	if (!ImGui::Begin("prompt", nullptr, ImGuiWindowFlags_NoTitleBar)) {
-		ImGui::End();
-		return;
-	}
-	// Command-line
-	bool reclaim_focus = false;
-	std::size_t buffer_size = 256;
-	char buffer[buffer_size];
-	memset(buffer, 0, buffer_size);
-	ImGuiInputTextFlags input_text_flags =
-		ImGuiInputTextFlags_EnterReturnsTrue |
-		ImGuiInputTextFlags_EscapeClearsAll |
-		ImGuiInputTextFlags_CallbackCompletion |
-		ImGuiInputTextFlags_CallbackHistory;
-	if (ImGui::InputText(
-			"Input",
-			buffer,
-			buffer_size,
-			input_text_flags,
-			&TextEditCallbackStub,
-			(void*)this)
-	) {
-		std::string input = buffer;
-		process_command(input);
-		ImGui::SetScrollHereY(1.0f);
-		reclaim_focus = true;
-	}
+	if (ImGui::Begin("prompt", nullptr, ImGuiWindowFlags_NoTitleBar)) {
+		bool reclaim_focus = false;
+		std::size_t buffer_size = 256;
+		char buffer[buffer_size];
+		memset(buffer, 0, buffer_size);
+		ImGuiInputTextFlags input_text_flags =
+			ImGuiInputTextFlags_EnterReturnsTrue |
+			ImGuiInputTextFlags_EscapeClearsAll |
+			ImGuiInputTextFlags_CallbackCompletion |
+			ImGuiInputTextFlags_CallbackHistory;
+		if (ImGui::InputText(
+				"Input",
+				buffer,
+				buffer_size,
+				input_text_flags,
+				&TextEditCallbackStub,
+				(void*)this)
+		) {
+			std::string input = buffer;
+			process_command(input);
+			ImGui::SetScrollHereY(1.0f);
+			reclaim_focus = true;
+		}
 
-	// Auto-focus on window apparition
-	ImGui::SetItemDefaultFocus();
-	if (reclaim_focus) {
-		ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+		// Auto-focus on window apparition
+		ImGui::SetItemDefaultFocus();
+		if (reclaim_focus) {
+			ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
+		}
 	}
-
 	ImGui::PopStyleVar();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
 	ImGui::End();
 }

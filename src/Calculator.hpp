@@ -8,8 +8,8 @@
 
 #include "helper_functions.hpp"
 
-#include "src_token/Token.hpp"
-#include "src_token/Function.hpp"
+#include "Token.hpp"
+#include "Function.hpp"
 	
 // Yeah it's a singleton, sue me.
 class Calculator {

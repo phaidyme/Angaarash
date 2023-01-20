@@ -19,8 +19,7 @@ Calculator::Calculator() {
 	};
 	std::vector<std::string> default_function_names = {
 		"sin", "cos", "tan",
-		"arcsin", "arccos", "arctan",
-		"log"
+		"arcsin", "arccos", "arctan"
 	};
 	std::vector<std::string> default_argument_names {
 		"theta", "theta", "theta",

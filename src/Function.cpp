@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "../helper_functions.hpp"
-#include "../Calculator.hpp"
+#include "helper_functions.hpp"
+#include "Calculator.hpp"
 
 #include "Function.hpp"
 

@@ -12,16 +12,13 @@
 #
 
 CXX = g++
-EXE = main.exe
-OBJ_DIR = o
-IMGUI_DIR = imgui
-TOKEN_DIR = src_token
-SOURCES = $(wildcard $(TOKEN_DIR)/*.cpp) $(wildcard $(IMGUI_DIR)/*.cpp) $(wildcard *.cpp)
-OBJS = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
+EXE = calculator.exe
+SOURCES = main.cpp $(wildcard src/*.cpp) $(wildcard imgui/*.cpp) imgui/backends/imgui_impl_glfw.cpp imgui/backends/imgui_impl_opengl3.cpp
+OBJS = $(addprefix obj/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 UNAME_S := $(shell uname -s)
 LINUX_GL_LIBS = -lGL
 
-CXXFLAGS = -std=gnu++20# -I$(IMGUI_DIR) -I$(IMGUI_DIR)/backends -Icpp__utils/src/
+CXXFLAGS = -std=gnu++20 -Iimgui -Iimgui/backends -Icpp__utils/src/
 CXXFLAGS += -g -Wall -Wextra -Wformat
 LIBS =
 
@@ -68,13 +65,16 @@ endif
 ## BUILD RULES
 ##---------------------------------------------------------------------
 
-$(OBJ_DIR)/%.o:%.cpp
+obj/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(OBJ_DIR)/%.o:$(IMGUI_DIR)/%.cpp
+obj/%.o: imgui/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(OBJ_DIR)/%.o:$(TOKEN_DIR)/%.cpp
+obj/%.o: imgui/backends/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 all: $(EXE)
