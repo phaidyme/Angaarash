@@ -10,9 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - with:
-      submodules: recursive
+    - name: pull repo
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - name: install glfw3
       run: sudo apt install libglfw3 libglfw3-dev
     - name: configure
