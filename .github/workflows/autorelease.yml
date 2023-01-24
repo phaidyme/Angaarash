@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    -uses: actions/checkout@v3
-    -name: install glfw3
+    - uses: actions/checkout@v3
+    - name: install glfw3
       run: sudo apt install libglfw3
-    -name: configure
+    - name: configure
       run: ./configure
-    -name: make
+    - name: make
       run: make
