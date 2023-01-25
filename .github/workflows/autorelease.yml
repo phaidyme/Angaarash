@@ -21,7 +21,7 @@ jobs:
     - name: make
       run: make
     - name: publish
-      uses: ncipollo/release-action
+      uses: ncipollo/release-action@latest
       with:
         name: ${{ github.event.head_commit.message }}
         artifacts: "calculator.exe"
