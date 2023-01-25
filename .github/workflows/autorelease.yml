@@ -41,11 +41,11 @@ jobs:
       contents: write
     steps:
     - uses: actions/download-artifact@v3
-    - with:
-      name: macos_binary
+      with:
+        name: macos_binary
     - uses: actions/download-artifact@v3
-    - with:
-      name: linux_binary
+      with:
+        name: linux_binary
     - uses: ncipollo/release-action@v1
       with:
         name: ${{ github.event.head_commit.message }}
