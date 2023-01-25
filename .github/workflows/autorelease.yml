@@ -22,5 +22,7 @@ jobs:
       run: make
     - name: publish
       env:
+        GITHUB_USER: BarZamSr@gmail.com
+        GITHUB_PASSWORD: ${{ secrets.RELEASE_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       run: hub release create -m "${{ github.event.head_commit.message }}" "$(date +%Y%m%d%H%M%S)"
