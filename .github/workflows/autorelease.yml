@@ -24,4 +24,6 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: ${{ github.event.head_commit.message }}
+        tag: ${{ github.run_number }}
+        commit: "master"
         artifacts: "calculator.exe"
