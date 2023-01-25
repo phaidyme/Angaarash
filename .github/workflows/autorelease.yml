@@ -3,8 +3,6 @@ name: C/C++ CI
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
 
 jobs:
   build:
@@ -21,8 +19,8 @@ jobs:
     - name: make
       run: make
     - name: publish
+      uses: elgohr/Github-Release-Action@v4
       env:
-        GITHUB_USER: BarZamSr@gmail.com
-        GITHUB_PASSWORD: ${{ secrets.PASSWORD }}
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      run: hub release create -m "${{ github.event.head_commit.message }}" "$(date +%Y%m%d%H%M%S)"
+      with:
+        title: ${{ github.event.head_commit.message }}
