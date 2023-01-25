@@ -10,17 +10,12 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: pull repo
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: install glfw3
-      run: sudo apt install libglfw3 libglfw3-dev
-    - name: configure
-      run: ./configure
-    - name: compile
-      run: make
-    - name: upload executable artifact
+    - run: sudo apt install libglfw3 libglfw3-dev
+    - run: ./configure
+    - run: make
     - uses: actions/upload-artifact@v3
       with:
         name: macos_binary
@@ -30,17 +25,12 @@ jobs:
     permissions:
       contents: write
     steps:
-    - name: pull repo
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: install glfw3
-      run: sudo apt install libglfw3 libglfw3-dev
-    - name: configure
-      run: ./configure
-    - name: compile
-      run: make
-    - name: upload executable artifact
+    - run: sudo apt install libglfw3 libglfw3-dev
+    - run: ./configure
+    - run: make
     - uses: actions/upload-artifact@v3
       with:
         name: linux_binary
@@ -56,8 +46,7 @@ jobs:
     - uses: actions/download-artifact@v3
     - with:
       name: linux_binary
-    - name: publish
-      uses: ncipollo/release-action@v1
+    - uses: ncipollo/release-action@v1
       with:
         name: ${{ github.event.head_commit.message }}
         tag: ${{ github.run_number }}
