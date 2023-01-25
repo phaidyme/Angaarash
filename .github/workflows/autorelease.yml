@@ -36,6 +36,7 @@ jobs:
         name: linux_binary
         path: calculator.exe
   publish:
+    needs: [build_macos, build_linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
