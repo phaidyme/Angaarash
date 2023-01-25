@@ -5,7 +5,27 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  build_macos:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+    - name: pull repo
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    - name: install glfw3
+      run: sudo apt install libglfw3 libglfw3-dev
+    - name: configure
+      run: ./configure
+    - name: compile
+      run: make
+    - name: upload executable artifact
+    - uses: actions/upload-artifact@v3
+      with:
+        name: macos_binary
+        path: calculator.exe
+  build_linux:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -18,8 +38,24 @@ jobs:
       run: sudo apt install libglfw3 libglfw3-dev
     - name: configure
       run: ./configure
-    - name: make
+    - name: compile
       run: make
+    - name: upload executable artifact
+    - uses: actions/upload-artifact@v3
+      with:
+        name: linux_binary
+        path: calculator.exe
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v3
+    - with:
+      name: macos_binary
+    - uses: actions/download-artifact@v3
+    - with:
+      name: linux_binary
     - name: publish
       uses: ncipollo/release-action@v1
       with:
