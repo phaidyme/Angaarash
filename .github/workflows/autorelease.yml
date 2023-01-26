@@ -16,10 +16,11 @@ jobs:
     - run: brew install glfw
     - run: ./configure
     - run: make
+    - run: mv calculator.exe calc_linux.exe
     - uses: actions/upload-artifact@v3
       with:
         name: macos_binary
-        path: calculator.exe
+        path: calc_linux.exe
   build_linux:
     runs-on: ubuntu-latest
     permissions:
@@ -31,10 +32,11 @@ jobs:
     - run: sudo apt install libglfw3 libglfw3-dev
     - run: ./configure
     - run: make
+    - run: mv calculator.exe calc_macos.exe
     - uses: actions/upload-artifact@v3
       with:
         name: linux_binary
-        path: calculator.exe
+        path: calc_macos.exe
   publish:
     needs: [build_macos, build_linux]
     runs-on: ubuntu-latest
@@ -52,4 +54,4 @@ jobs:
         name: ${{ github.event.head_commit.message }}
         tag: ${{ github.run_number }}
         commit: "master"
-        artifacts: "calculator.exe"
+        artifacts: "calc_linux.exe, calc_macos.exe"
