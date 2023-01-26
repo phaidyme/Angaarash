@@ -1,4 +1,0 @@
-CXX=g++
-CXXFLAGS="-g `pkg-config --cflags glfw3` -std=gnu++20 -Iimgui -Iimgui/backends"
-NATIVE=on # compiles code targeted to current hardware
-TUNE=generic # performance-tuning switch
