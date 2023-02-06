@@ -12,7 +12,7 @@
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 
-#include "src/Console.hpp"
+#include "Console.hpp"
 
 static void glfw_error_callback(int, char const*);
 
