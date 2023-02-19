@@ -6,29 +6,16 @@ endif()
 
 project(Angaarash LANGUAGES CXX)
 
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
-
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
-find_package(GLFW3 3.3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(CMAKE_CXX_EXTENSIONS Off)
 
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory(${PROJECT_SOURCE_DIR}/ext/glfw)
 
 add_library(ImGui STATIC
 	${PROJECT_SOURCE_DIR}/ext/imgui/imgui.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_draw.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_tables.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_widgets.cpp
@@ -46,5 +33,4 @@ install(TARGETS Angaarash DESTINATION bin)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE.txt DESTINATION .)
 
 include(InstallRequiredSystemLibraries)
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.txt")
 include(CPack)

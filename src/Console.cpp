@@ -12,7 +12,7 @@ Console::Console(): HistoryPos(-1) {
 	commands.push_back("let");
 
 	AddLog("Hello and thank you for using Angaarash :)");
-	AddLog("To issue a command, use the text input field at the bottom of the window.");
+	AddLog("To enter a command, use the text input field at the bottom of the window.");
 	AddLog("For more help, enter \"help\" (sans quotation marks).");
 }
 
@@ -61,12 +61,12 @@ void Console::process_command(std::string& command_line) {
 void Console::help(std::string& command_line) {
 	if (command_line == "help") {
 		AddLog("This is is an interactive console with a limited list of commands.");
-		AddLog("To view supported commands, enter \"help --commands\"");
-		AddLog("To evaluate a mathematical expression, simply enter the expression (e.g. \"2+2\" or \"sin(2pi)\")");
+		AddLog("To view supported commands, enter \"help --commands\".");
+		AddLog("To evaluate a mathematical expression, simply enter the expression (e.g. \"2+2\" or \"sin(2pi)\").");
 		AddLog("Note that asterisk replaces cross for multiplication, and caret replaces superscript for exponentiation.");
 		AddLog("Lists of currently defined functions and variables are shown on the right.");
 		AddLog("To define your own functions or variables, you can use the \"let\" command.");
-		AddLog("For further help with a specific command, enter \"help --<command_name>\" (e.g. \"help --let\")");
+		AddLog("For further help with a specific command, enter \"help --<command_name>\" (e.g. \"help --let\").");
 	}
 	else if (command_line == "help --commands") {
 		for (const auto& command: commands) {
@@ -76,13 +76,13 @@ void Console::help(std::string& command_line) {
 	else if (command_line == "help --help") {
 		AddLog("Enter \"help\" without any arguments for basic information.");
 		AddLog("Enter \"help --commands\" to view a list of available commands.");
-		AddLog("Enter \"help --\" followed by the name of any command for more detailed information on that command");
+		AddLog("Enter \"help --\" followed by the name of any command for more detailed information on that command.");
 	}
 	else if (command_line == "help --clear") {
-		AddLog("Enter \"clear\" to clear the console.");
+		AddLog("Enter \"clear\" to clear previous commands and responses from the console.");
 	}
 	else if (command_line == "help --history") {
-		AddLog("Enter \"history\" to view a list of previously entered commands");
+		AddLog("Enter \"history\" to view a list of previously entered commands.");
 	}
 	else if (command_line == "help --let") {
 		AddLog("Use the \"let\" command to define custom functions or variables.");
