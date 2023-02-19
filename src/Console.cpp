@@ -42,7 +42,7 @@ void Console::process_command(std::string& command_line) {
 		help(command_line);
 	}
 	else if (stricmp(command_line, "HISTORY") == 0) {
-		uint i = std::max(0, (int)history.size() - 10);
+		unsigned int i = std::max(0, (int)history.size() - 10);
 		for (; i < history.size(); i++) {
 			AddLog("%3d: %s\n", i, history[i].c_str());
 		}
@@ -261,7 +261,7 @@ void Console::render_console(ImVec2 position, ImVec2 size) {
 	auto command_colour = ImVec4(0.7f, 0.56f, 0.42f, 1.0f);
 	auto response_colour = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 	
-	for (uint i = 0; i < items.size(); i++) {
+	for (unsigned int i = 0; i < items.size(); i++) {
 		std::string const& item = items[i];
 		if (strstr(item.c_str(), "[error]")) {
 			ImGui::PushStyleColor(ImGuiCol_Text, error_colour);

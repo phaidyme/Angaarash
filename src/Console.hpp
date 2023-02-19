@@ -64,7 +64,7 @@ public:
 
 			// Build a list of candidates
 			std::vector<std::string> candidates;
-			for (uint i = 0; i < commands.size(); i++)
+			for (unsigned int i = 0; i < commands.size(); i++)
 				if (strnicmp(commands[i], word_start, (int)(word_end - word_start)) == 0)
 					candidates.push_back(commands[i]);
 
@@ -84,7 +84,7 @@ public:
 				while(true) {
 					int c = 0;
 					bool all_candidates_matches = true;
-					for (uint i = 0; i < candidates.size() && all_candidates_matches; i++) {
+					for (unsigned int i = 0; i < candidates.size() && all_candidates_matches; i++) {
 						if (i == 0) {
 							c = toupper(candidates[i][match_len]);
 						}
@@ -105,7 +105,7 @@ public:
 
 				// List matches
 				AddLog("Possible matches:\n");
-				for (uint i = 0; i < candidates.size(); i++) {
+				for (unsigned int i = 0; i < candidates.size(); i++) {
 					AddLog("- %s\n", candidates[i].c_str());
 				}
 			}
