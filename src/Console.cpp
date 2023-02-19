@@ -12,7 +12,8 @@ Console::Console(): HistoryPos(-1) {
 	commands.push_back("let");
 
 	AddLog("Hello and thank you for using Angaarash :)");
-	AddLog("For help, enter \"help\" (sans quotation marks).");
+	AddLog("To issue a command, use the text input field at the bottom of the window.");
+	AddLog("For more help, enter \"help\" (sans quotation marks).");
 }
 
 void Console::process_command(std::string& command_line) {

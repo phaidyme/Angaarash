@@ -1,0 +1,45 @@
+name: autorelease
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: cmake -S . -B build
+    - run: cmake --build build
+  windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: build
+      shell: bash
+      run: |
+        cmake -S . -B build
+        cmake --build build
+        cd build
+        cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=angaarash_windows
+        cd ..
+        mv build/angaarash_windows.zip .
+    - uses: actions/upload-artifact@v3
+      with:
+        name: windows_build
+        path: angaarash_windows.zip
+  publish:
+    needs: [windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: windows_build
+    - uses: ncipollo/release-action@v1
+      with:
+        name: ${{ github.event.head_commit.message }}
+        tag: ${{ github.run_number }}
+        commit: "master"
+        artifacts: "angaarash_windows.zip"
