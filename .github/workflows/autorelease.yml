@@ -9,12 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with: 
+        submodules: recursive
     - run: cmake -S . -B build
     - run: cmake --build build
   windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: recursive
     - name: build
       shell: bash
       run: |
