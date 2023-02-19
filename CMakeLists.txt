@@ -32,8 +32,7 @@ set(CMAKE_CXX_EXTENSIONS Off)
 
 add_library(ImGui STATIC
 	${PROJECT_SOURCE_DIR}/ext/imgui/imgui.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_draw.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_tables.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/imgui_widgets.cpp
-	${PROJECT_SOURCE_DIR}/ext/imgui/backends/imgui_impl_glfw.cpp
-	${PROJECT_SOURCE_DIR}/ext/imgui/backends/imgui_impl_opengl3.cpp
+	${PROJECT_SOURCE_DIR}/ext/imgui/backends/imgui_impl_glfw.cpp ${PROJECT_SOURCE_DIR}/ext/imgui/backends/imgui_impl_opengl3.cpp
 )
 target_include_directories(ImGui PRIVATE ${PROJECT_SOURCE_DIR}/ext/imgui)
 target_include_directories(ImGui PRIVATE ${PROJECT_SOURCE_DIR}/ext/imgui/backends)
@@ -42,3 +41,11 @@ target_link_libraries(ImGui glfw)
 target_link_libraries(ImGui OpenGL::GL)
 
 add_subdirectory(src)
+
+install(TARGETS Angaarash DESTINATION bin)
+
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "2")
+include(CPack)

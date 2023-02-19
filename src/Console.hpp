@@ -36,6 +36,7 @@ public:
 	void process_command(std::string&);
 	void render();
 
+	void help(std::string&);
 	std::optional<Number> evaluate(Expression);
 	void let(std::string&);
 

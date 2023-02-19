@@ -26,6 +26,7 @@ void trim_whitespace(std::string&);
 
 bool is_alpha(const std::string&);
 
+// used to sort function/variable priority queues by length
 class string_length_comp {
 public:
 	bool operator ()(std::string, std::string) const;
