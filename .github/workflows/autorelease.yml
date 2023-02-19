@@ -23,7 +23,7 @@ jobs:
     - name: build
       shell: bash
       run: |
-        choco install glfw3
+        choco install glfw3 --allow-empty-checksums
         cmake -S . -B build
         cmake --build build
         cd build
