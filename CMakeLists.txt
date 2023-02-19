@@ -30,8 +30,8 @@ target_link_libraries(ImGui OpenGL::GL)
 
 add_subdirectory(src)
 
-install(TARGETS Angaarash DESTINATION bin)
-install(FILES ${PROJECT_SOURCE_DIR}/LICENSE.txt DESTINATION .)
+install(TARGETS Angaarash DESTINATION Release/bin/)
+install(FILES ${PROJECT_SOURCE_DIR}/LICENSE.txt DESTINATION Release/)
 
 include(InstallRequiredSystemLibraries)
 include(CPack)

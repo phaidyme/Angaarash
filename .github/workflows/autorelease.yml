@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@v3
       with: 
         submodules: recursive
-    - run: sudo apt install freeglut3-dev libxrandr-dev
+    - run: sudo apt install freeglut3-dev libxrandr-dev libxinerama-dev
     - run: cmake -S . -B build
     - run: cmake --build build
   windows:
@@ -26,7 +26,7 @@ jobs:
         cmake -S . -B build
         cmake --build build
         cd build
-        cpack -G ZIP -D CPACK_PACKAGE_FILE_NAME=angaarash_windows
+        cpack -G ZIP -C Release -D CPACK_PACKAGE_FILE_NAME=angaarash_windows
         cd ..
         mv build/angaarash_windows.zip .
     - uses: actions/upload-artifact@v3
