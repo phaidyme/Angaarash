@@ -316,7 +316,7 @@ void Console::render_prompt(ImVec2 position, ImVec2 size) {
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 	if (ImGui::Begin("prompt", nullptr, ImGuiWindowFlags_NoTitleBar)) {
 		bool reclaim_focus = false;
-		std::size_t buffer_size = 256;
+		const std::size_t buffer_size = 256;
 		char buffer[buffer_size];
 		memset(buffer, 0, buffer_size);
 		ImGuiInputTextFlags input_text_flags =
