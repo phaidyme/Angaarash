@@ -7,10 +7,7 @@
 Angaarash is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with Angaarash. If not, see <https://www.gnu.org/licenses/>.
 
-Angaarash is an attempt to explore mathematics from an algorithmic perspective.
-
-It currently falls under the definition of a Computer Algebra System (***CAS***),
-although new features are under active development.
+Angaarash is an ongoing attempt to explore mathematics from an algorithmic perspective. It generally falls under the definition of a Computer Algebra System (***CAS***). New features are under active development.
 ___
 ### Features
 Existing:
@@ -30,6 +27,8 @@ Upcoming:
 - Complex numbers
 - Arbitrary precision numbers (GMP)
 - Graphing
+- Solving quadratics and other polynomials
+- Calculus
 ___
 ### Installation
 On Windows:
