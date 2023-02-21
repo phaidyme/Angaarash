@@ -29,3 +29,9 @@ ___
  - Complex numbers
  - Arbitrary precision numbers (GMP)
  - Graphing
+___
+### Installation
+- Windows:
+ - Download the latest release package from [GitHub](https://github.com/BarZamSr/Angaarash).
+- Linux:
+ - Clone Angaarash from [GitHub](https://github.com/BarZamSr/Angaarash) and, from the root of the repository, execute the script at `./scripts/build.sh` with an install directory of your choosing as an argument (e.g. `./scripts/build.sh ~/Angaarash`.
