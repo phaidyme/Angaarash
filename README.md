@@ -37,7 +37,7 @@ On Windows:
 3. Open Angaarash from inside the `bin` directory
 
 On GNU/Linux:
-1. Open a terminal window and clone Angaarash with `git clone --recursive https://github.com/BarZamSr/Angaarash.git`
+1. Open a terminal window and clone Angaarash with `git clone --recursive git@github.com:BarZamSr/Angaarash.git`
 2. Navigate to the root of the repository with `cd Angaarash`
 3. Execute the build script with an install directory of your choosing as the argument (e.g. `./scripts/build.sh ~/Desktop/Angaarash`
 4. Open Angaarash from inside the `bin` directory where you chose to install (e.g. `~/Desktop/Angaarash/bin`)
